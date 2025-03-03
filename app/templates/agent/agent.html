@@ -1,0 +1,247 @@
+{% extends "base.html" %}
+
+{% block title %}智能体管理 - AI-RPA-Chat{% endblock %}
+
+{% block content %}
+<div class="container">
+    <div class="row mb-4">
+        <div class="col">
+            <h2>智能体管理</h2>
+            <button class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#agentModal" onclick="resetForm()">
+                创建新智能体
+            </button>
+        </div>
+    </div>
+
+    <div class="row">
+        <div class="col">
+            <div class="list-group" id="agentList">
+                <!-- 智能体列表将通过JavaScript动态加载 -->
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- 智能体模态框 -->
+<div class="modal fade" id="agentModal" tabindex="-1">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">创建新智能体</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body">
+                <form id="agentForm">
+                    <input type="hidden" id="agentId">
+                    <div class="mb-3">
+                        <label for="agentName" class="form-label">名称</label>
+                        <input type="text" class="form-control" id="agentName" required>
+                    </div>
+                    <div class="mb-3">
+                        <label for="agentDescription" class="form-label">描述</label>
+                        <textarea class="form-control" id="agentDescription" rows="3"></textarea>
+                    </div>
+                    <div class="mb-3">
+                        <label for="agentPrompt" class="form-label">系统提示词</label>
+                        <textarea class="form-control" id="agentPrompt" rows="5"></textarea>
+                    </div>
+                    <div class="mb-3">
+                        <label for="agentModel" class="form-label">模型名称</label>
+                        <input type="text" class="form-control" id="agentModel" 
+                               placeholder="例如: deepseek-coder:latest">
+                        <div class="form-text">可用模型: deepseek-coder, llama2, mistral 等</div>
+                    </div>
+                    <div class="mb-3">
+                        <label for="agentLLMUrl" class="form-label">LLM服务地址</label>
+                        <input type="text" class="form-control" id="agentLLMUrl" 
+                               placeholder="http://127.0.0.1">
+                    </div>
+                    <div class="mb-3">
+                        <label for="agentLLMPort" class="form-label">LLM服务端口</label>
+                        <input type="number" class="form-control" id="agentLLMPort" 
+                               placeholder="11434">
+                    </div>
+                </form>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">取消</button>
+                <button type="button" class="btn btn-primary" id="saveButton" onclick="saveAgent()">创建</button>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+let editMode = false;
+
+// 重置表单
+function resetForm() {
+    editMode = false;
+    document.getElementById('agentForm').reset();
+    document.getElementById('agentId').value = '';
+    document.querySelector('#agentModal .modal-title').textContent = '创建新智能体';
+    document.getElementById('saveButton').textContent = '创建';
+}
+
+// 加载智能体列表
+async function loadAgents() {
+    try {
+        const response = await fetch('{{ url_for("agent.list_agents") }}');
+        if (!response.ok) {
+            const errorData = await response.json();
+            throw new Error(errorData.error || `HTTP error! status: ${response.status}`);
+        }
+        const agents = await response.json();
+        const agentList = document.getElementById('agentList');
+        agentList.innerHTML = agents.map(agent => `
+            <div class="list-group-item">
+                <div class="d-flex w-100 justify-content-between">
+                    <h5 class="mb-1">${agent.name}</h5>
+                    <div>
+                        <button class="btn btn-sm btn-outline-primary" onclick="editAgent(${agent.id})">
+                            <i class="fas fa-edit"></i> 编辑
+                        </button>
+                        <button class="btn btn-sm btn-outline-danger" onclick="deleteAgent(${agent.id})">
+                            <i class="fas fa-trash"></i> 删除
+                        </button>
+                    </div>
+                </div>
+                <p class="mb-1">${agent.description || ''}</p>
+                <small class="text-muted">
+                    模型: ${agent.model_name || '默认'} | 
+                    URL: ${agent.llm_url || '默认'}:${agent.llm_port || '默认'}
+                </small>
+            </div>
+        `).join('');
+    } catch (error) {
+        console.error('加载智能体失败:', error);
+        showError('加载智能体失败: ' + error.message);
+    }
+}
+
+// 编辑智能体
+async function editAgent(agentId) {
+    try {
+        const response = await fetch(`{{ url_for("agent.get_agent", agent_id=0) }}`.replace('0', agentId));
+        if (!response.ok) {
+            const errorData = await response.json();
+            throw new Error(errorData.error || `HTTP error! status: ${response.status}`);
+        }
+        const agent = await response.json();
+
+        // 设置编辑模式
+        editMode = true;
+        document.querySelector('#agentModal .modal-title').textContent = '编辑智能体';
+        document.getElementById('saveButton').textContent = '保存';
+
+        // 填充表单
+        document.getElementById('agentId').value = agent.id;
+        document.getElementById('agentName').value = agent.name;
+        document.getElementById('agentDescription').value = agent.description || '';
+        document.getElementById('agentPrompt').value = agent.prompt || '';
+        document.getElementById('agentModel').value = agent.model_name || '';
+        document.getElementById('agentLLMUrl').value = agent.llm_url || '';
+        document.getElementById('agentLLMPort').value = agent.llm_port || '';
+
+        // 显示模态框
+        const modal = new bootstrap.Modal(document.getElementById('agentModal'));
+        modal.show();
+    } catch (error) {
+        console.error('加载智能体失败:', error);
+        showError('加载智能体失败: ' + error.message);
+    }
+}
+
+// 保存智能体（创建或更新）
+async function saveAgent() {
+    const data = {
+        name: document.getElementById('agentName').value,
+        description: document.getElementById('agentDescription').value,
+        prompt: document.getElementById('agentPrompt').value,
+        model_name: document.getElementById('agentModel').value || 'deepseek-coder:latest',
+        llm_url: document.getElementById('agentLLMUrl').value || 'http://127.0.0.1',
+        llm_port: parseInt(document.getElementById('agentLLMPort').value) || 11434
+    };
+
+    try {
+        let url, method;
+        if (editMode) {
+            const agentId = document.getElementById('agentId').value;
+            url = `{{ url_for("agent.update_agent", agent_id=0) }}`.replace('0', agentId);
+            method = 'PUT';
+        } else {
+            url = '{{ url_for("agent.create_agent") }}';
+            method = 'POST';
+        }
+
+        const response = await fetch(url, {
+            method: method,
+            headers: {
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify(data)
+        });
+
+        if (!response.ok) {
+            const errorData = await response.json();
+            throw new Error(errorData.error || `HTTP error! status: ${response.status}`);
+        }
+
+        bootstrap.Modal.getInstance(document.getElementById('agentModal')).hide();
+        loadAgents();
+        showSuccess(editMode ? '智能体更新成功' : '智能体创建成功');
+    } catch (error) {
+        console.error(editMode ? '更新智能体失败:' : '创建智能体失败:', error);
+        showError(error.message);
+    }
+}
+
+// 显示成功提示
+function showSuccess(message) {
+    const toast = `
+        <div class="toast-container position-fixed bottom-0 end-0 p-3">
+            <div class="toast" role="alert">
+                <div class="toast-header bg-success text-white">
+                    <i class="fas fa-check-circle me-2"></i>
+                    <strong class="me-auto">成功</strong>
+                    <button type="button" class="btn-close" data-bs-dismiss="toast"></button>
+                </div>
+                <div class="toast-body">${message}</div>
+            </div>
+        </div>
+    `;
+    document.body.insertAdjacentHTML('beforeend', toast);
+    const toastEl = document.querySelector('.toast:last-child');
+    const toast_instance = new bootstrap.Toast(toastEl);
+    toast_instance.show();
+}
+
+// 显示错误提示
+function showError(message) {
+    const toast = `
+        <div class="toast-container position-fixed bottom-0 end-0 p-3">
+            <div class="toast" role="alert">
+                <div class="toast-header bg-danger text-white">
+                    <i class="fas fa-exclamation-circle me-2"></i>
+                    <strong class="me-auto">错误</strong>
+                    <button type="button" class="btn-close" data-bs-dismiss="toast"></button>
+                </div>
+                <div class="toast-body">${message}</div>
+            </div>
+        </div>
+    `;
+    document.body.insertAdjacentHTML('beforeend', toast);
+    const toastEl = document.querySelector('.toast:last-child');
+    const toast_instance = new bootstrap.Toast(toastEl);
+    toast_instance.show();
+}
+
+// 页面加载时加载智能体列表
+document.addEventListener('DOMContentLoaded', loadAgents);
+
+// 模态框关闭时重置表单
+document.getElementById('agentModal').addEventListener('hidden.bs.modal', resetForm);
+</script>
+{% endblock %} 

@@ -1,0 +1,39 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="jumbotron">
+    <h1 class="display-4">欢迎使用海瑞AI-RPA平台</h1>
+    <p class="lead">自定义智能体终端</p>
+    <hr class="my-4">
+    <p>您可以创建自定义智能体，配置RPA自动化流程，实现智能对话和自动化操作。</p>
+    <div class="row mt-4">
+        <div class="col-md-4">
+            <div class="card">
+                <div class="card-body">
+                    <h5 class="card-title">智能对话</h5>
+                    <p class="card-text">创建自定义智能体，进行智能对话</p>
+                    <a href="{{ url_for('chat.chat_page') }}" class="btn btn-primary">开始对话</a>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-4">
+            <div class="card">
+                <div class="card-body">
+                    <h5 class="card-title">智能体管理</h5>
+                    <p class="card-text">管理您的自定义智能体</p>
+                    <a href="{{ url_for('agent.agent_page') }}" class="btn btn-primary">管理智能体</a>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-4">
+            <div class="card">
+                <div class="card-body">
+                    <h5 class="card-title">RPA任务</h5>
+                    <p class="card-text">创建和管理RPA自动化任务</p>
+                    <a href="{{ url_for('rpa.rpa_tasks') }}" class="btn btn-primary">RPA任务</a>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %} 

@@ -1,0 +1,1097 @@
+{% extends "base.html" %}
+
+{% block title %}RPA任务 - AI-RPA-Chat{% endblock %}
+
+{% block content %}
+<div class="container">
+    <div class="row mb-4">
+        <div class="col">
+            <h2>RPA任务管理</h2>
+            <button class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#taskModal">
+                创建新任务
+            </button>
+        </div>
+    </div>
+
+    <div class="row">
+        <div class="col">
+            <div id="alertArea"></div>
+            <div class="list-group" id="taskList">
+                <!-- 任务列表将通过JavaScript动态加载 -->
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- 任务模态框 -->
+<div class="modal fade" id="taskModal" tabindex="-1">
+    <div class="modal-dialog modal-lg">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">RPA任务</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body">
+                <form id="taskForm">
+                    <input type="hidden" id="taskId">
+                    <div class="mb-3">
+                        <label for="taskName" class="form-label">任务名称</label>
+                        <input type="text" class="form-control" id="taskName" required>
+                    </div>
+                    <div class="mb-3">
+                        <label for="taskDescription" class="form-label">任务描述</label>
+                        <textarea class="form-control" id="taskDescription" rows="3"></textarea>
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label">任务步骤</label>
+                        <div id="taskSteps">
+                            <!-- 步骤将通过JavaScript动态添加 -->
+                        </div>
+                        <div class="btn-group mt-2">
+                            <button type="button" class="btn btn-outline-primary" onclick="addBasicStep()">
+                                基本操作
+                            </button>
+                            <button type="button" class="btn btn-outline-primary" onclick="addMouseStep()">
+                                鼠标操作
+                            </button>
+                            <button type="button" class="btn btn-outline-primary" onclick="addKeyboardStep()">
+                                键盘操作
+                            </button>
+                            <button type="button" class="btn btn-outline-primary" onclick="addWaitStep()">
+                                等待
+                            </button>
+                        </div>
+                    </div>
+                    <div class="mb-3">
+                        <div class="form-check">
+                            <input class="form-check-input" type="checkbox" id="debugModeEdit">
+                            <label class="form-check-label" for="debugModeEdit">
+                                调试模式（编辑时单步执行）
+                            </label>
+                        </div>
+                        <div id="debugPanelEdit" class="d-none mt-3">
+                            <div class="card mb-3">
+                                <div class="card-body">
+                                    <h6 class="card-title">当前步骤</h6>
+                                    <div id="currentStepEdit" class="mb-2"></div>
+                                    <div class="progress mb-3">
+                                        <div id="stepProgressEdit" class="progress-bar" role="progressbar" style="width: 0%"></div>
+                                    </div>
+                                    <div class="btn-group">
+                                        <button type="button" class="btn btn-primary" id="stepNextEdit" disabled>
+                                            测试此步骤 <i class="fas fa-play"></i>
+                        </button>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="card">
+                                <div class="card-body">
+                                    <h6 class="card-title">执行日志</h6>
+                                    <div id="debugLogEdit" class="border rounded p-2" style="height: 150px; overflow-y: auto; font-family: monospace;">
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </form>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" onclick="closeTaskModal()">关闭</button>
+                <button type="button" class="btn btn-primary" onclick="saveTask()">保存</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- 执行任务模态框 -->
+<div class="modal fade" id="executeModal" tabindex="-1">
+    <div class="modal-dialog modal-lg">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">执行任务</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body">
+                <div class="form-check mb-3">
+                    <input class="form-check-input" type="checkbox" id="autoClose" checked>
+                    <label class="form-check-label" for="autoClose">
+                        执行完成后自动关闭浏览器
+                    </label>
+                </div>
+                <div class="form-check mb-3">
+                    <input class="form-check-input" type="checkbox" id="debugMode">
+                    <label class="form-check-label" for="debugMode">
+                        调试模式（单步执行）
+                    </label>
+                </div>
+                <div id="debugPanel" class="d-none">
+                    <div class="card mb-3">
+                        <div class="card-body">
+                            <h6 class="card-title">当前步骤</h6>
+                            <div id="currentStep" class="mb-2"></div>
+                            <div class="progress mb-3">
+                                <div id="stepProgress" class="progress-bar" role="progressbar" style="width: 0%"></div>
+                            </div>
+                            <div class="btn-group">
+                                <button type="button" class="btn btn-primary" id="stepNext" disabled>
+                                    下一步 <i class="fas fa-step-forward"></i>
+                                </button>
+                                <button type="button" class="btn btn-success" id="stepRun" disabled>
+                                    继续执行 <i class="fas fa-play"></i>
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="card">
+                        <div class="card-body">
+                            <h6 class="card-title">执行日志</h6>
+                            <div id="debugLog" class="border rounded p-2" style="height: 200px; overflow-y: auto; font-family: monospace;">
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">取消</button>
+                <button type="button" class="btn btn-primary" onclick="confirmExecute()">执行</button>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+// 显示提示信息
+function showAlert(message, type = 'success') {
+    const alertDiv = document.createElement('div');
+    alertDiv.className = `alert alert-${type} alert-dismissible fade show`;
+    alertDiv.innerHTML = `
+        ${message}
+        <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+    `;
+    document.getElementById('alertArea').appendChild(alertDiv);
+    
+    setTimeout(() => {
+        alertDiv.remove();
+    }, 5000);
+}
+
+// 加载任务列表
+async function loadTasks() {
+    try {
+        const response = await fetch('{{ url_for("rpa.get_tasks") }}');
+        if (!response.ok) {
+            throw new Error(`HTTP error! status: ${response.status}`);
+        }
+        const data = await response.json();
+        const taskList = document.getElementById('taskList');
+        
+        if (data.tasks.length === 0) {
+            taskList.innerHTML = '<div class="alert alert-info">暂无任务，点击"创建新任务"按钮创建第一个任务。</div>';
+            return;
+        }
+        
+        taskList.innerHTML = data.tasks.map(task => `
+            <div class="list-group-item">
+                <div class="d-flex w-100 justify-content-between">
+                    <h5 class="mb-1">${task.name}</h5>
+                    <div>
+                        <button class="btn btn-sm btn-success" onclick="showExecuteModal(${task.id})">执行</button>
+                        <button class="btn btn-sm btn-primary" onclick="editTask(${task.id})">编辑</button>
+                        <button class="btn btn-sm btn-outline-danger" onclick="deleteTask(${task.id})">删除</button>
+                    </div>
+                </div>
+                <p class="mb-1">${task.description || '<em>无描述</em>'}</p>
+                <small class="text-muted">步骤数: ${task.steps.length}</small>
+                <br>
+                <small class="text-muted">
+                    创建时间: ${new Date(task.created_at).toLocaleString()}
+                    ${task.last_run ? `<br>最后执行: ${new Date(task.last_run).toLocaleString()}` : ''}
+                </small>
+            </div>
+        `).join('');
+    } catch (error) {
+        console.error('加载任务失败:', error);
+        showAlert('加载任务失败: ' + error.message, 'danger');
+    }
+}
+
+// 编辑任务
+async function editTask(taskId) {
+    try {
+        const response = await fetch(`/rpa/task/${taskId}`);
+        if (!response.ok) {
+            throw new Error(`HTTP error! status: ${response.status}`);
+        }
+        const task = await response.json();
+        
+        document.getElementById('taskId').value = task.id;
+        document.getElementById('taskName').value = task.name;
+        document.getElementById('taskDescription').value = task.description || '';
+        
+        const stepsDiv = document.getElementById('taskSteps');
+        stepsDiv.innerHTML = '';
+        task.steps.forEach(step => {
+            addStepToUI(step);
+        });
+        
+        const modal = new bootstrap.Modal(document.getElementById('taskModal'));
+        modal.show();
+    } catch (error) {
+        console.error('加载任务失败:', error);
+        showAlert('加载任务失败: ' + error.message, 'danger');
+    }
+}
+
+// 保存任务
+async function saveTask() {
+    const taskId = document.getElementById('taskId').value;
+    const taskName = document.getElementById('taskName').value.trim();
+    if (!taskName) {
+        showAlert('任务名称不能为空', 'danger');
+        return;
+    }
+    
+    const steps = collectSteps();
+    if (steps.length === 0) {
+        showAlert('请至少添加一个任务步骤', 'danger');
+        return;
+    }
+
+    // 验证步骤数据
+    for (let i = 0; i < steps.length; i++) {
+        const step = steps[i];
+        if (step.action === 'navigate' && !step.url) {
+            showAlert(`第${i + 1}步：请输入有效的URL`, 'danger');
+            return;
+        }
+        if ((step.action === 'click' || step.action === 'input') && !step.xpath) {
+            showAlert(`第${i + 1}步：请输入有效的XPath`, 'danger');
+            return;
+        }
+        if (step.action === 'input' && !step.value) {
+            showAlert(`第${i + 1}步：请输入要输入的文本`, 'danger');
+            return;
+        }
+        if (step.action === 'wait') {
+            const seconds = parseFloat(step.seconds);
+            if (isNaN(seconds) || seconds < 0) {
+                showAlert(`第${i + 1}步：请输入有效的等待时间（秒）`, 'danger');
+                return;
+            }
+        }
+    }
+
+    const data = {
+        name: taskName,
+        description: document.getElementById('taskDescription').value.trim(),
+        steps: steps
+    };
+
+    try {
+        const url = taskId ? `/rpa/task/${taskId}` : '{{ url_for("rpa.create_task") }}';
+        const method = taskId ? 'PUT' : 'POST';
+        
+        const response = await fetch(url, {
+            method: method,
+            headers: {
+                'Content-Type': 'application/json',
+                'X-CSRFToken': document.querySelector('meta[name="csrf-token"]').getAttribute('content')
+            },
+            body: JSON.stringify(data)
+        });
+
+        if (!response.ok) {
+            const errorData = await response.json();
+            throw new Error(errorData.error || `HTTP error! status: ${response.status}`);
+        }
+
+        showAlert(taskId ? '任务更新成功！' : '任务创建成功！');
+        loadTasks(); // 刷新任务列表
+    } catch (error) {
+        console.error('保存任务失败:', error);
+        showAlert('保存任务失败: ' + error.message, 'danger');
+    }
+}
+
+// 调试模式相关变量
+let debugMode = false;
+let currentTaskSteps = [];
+let currentStepIndex = -1;
+let executionPaused = false;
+
+// 监听调试模式复选框
+document.getElementById('debugMode').addEventListener('change', function(e) {
+    debugMode = e.target.checked;
+    document.getElementById('debugPanel').classList.toggle('d-none', !debugMode);
+});
+
+// 监听编辑模式下的调试模式复选框
+document.getElementById('debugModeEdit').addEventListener('change', function(e) {
+    const debugPanel = document.getElementById('debugPanelEdit');
+    debugPanel.classList.toggle('d-none', !e.target.checked);
+});
+
+// 显示执行任务模态框
+let currentTaskId = null;
+function showExecuteModal(taskId) {
+    currentTaskId = taskId;
+    // 重置调试状态
+    currentStepIndex = -1;
+    executionPaused = false;
+    document.getElementById('stepNext').disabled = true;
+    document.getElementById('stepRun').disabled = true;
+    document.getElementById('debugLog').innerHTML = '';
+    document.getElementById('currentStep').innerHTML = '';
+    document.getElementById('stepProgress').style.width = '0%';
+    
+    // 加载任务步骤
+    fetch(`/rpa/task/${taskId}`)
+        .then(response => response.json())
+        .then(task => {
+            currentTaskSteps = task.steps;
+            const modal = new bootstrap.Modal(document.getElementById('executeModal'));
+            modal.show();
+        })
+        .catch(error => {
+            console.error('加载任务失败:', error);
+            showAlert('加载任务失败: ' + error.message, 'danger');
+        });
+}
+
+// 确认执行任务
+async function confirmExecute() {
+    if (!currentTaskId) return;
+    
+    const autoClose = document.getElementById('autoClose').checked;
+    debugMode = document.getElementById('debugMode').checked;
+    
+    if (debugMode) {
+        startDebugExecution(currentTaskId, autoClose);
+    } else {
+        executeTask(currentTaskId, autoClose);
+        bootstrap.Modal.getInstance(document.getElementById('executeModal')).hide();
+    }
+}
+
+// 开始调试执行
+async function startDebugExecution(taskId, autoClose) {
+    currentStepIndex = -1;
+    executionPaused = false;
+    document.getElementById('stepNext').disabled = false;
+    document.getElementById('stepRun').disabled = false;
+    
+    // 绑定按钮事件
+    document.getElementById('stepNext').onclick = () => executeNextStep(taskId, autoClose);
+    document.getElementById('stepRun').onclick = () => {
+        executionPaused = false;
+        executeRemainingSteps(taskId, autoClose);
+    };
+    
+    // 执行第一步
+    await executeNextStep(taskId, autoClose);
+}
+
+// 执行下一步
+async function executeNextStep(taskId, autoClose) {
+    if (currentStepIndex >= currentTaskSteps.length - 1) {
+        showAlert('所有步骤已执行完成');
+        return;
+    }
+    
+    currentStepIndex++;
+    executionPaused = true;
+    
+    const step = currentTaskSteps[currentStepIndex];
+    updateDebugUI(step);
+    
+    try {
+        const response = await fetch('{{ url_for("rpa.execute_step") }}', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'X-CSRFToken': document.querySelector('meta[name="csrf-token"]').getAttribute('content')
+            },
+            body: JSON.stringify({
+                task_id: taskId,
+                step_index: currentStepIndex,
+                auto_close: autoClose && currentStepIndex === currentTaskSteps.length - 1
+            })
+        });
+
+        if (!response.ok) {
+            const errorData = await response.json();
+            throw new Error(errorData.error || `HTTP error! status: ${response.status}`);
+        }
+
+        const result = await response.json();
+        addDebugLog('成功', step);
+        
+        // 更新进度
+        updateProgress();
+        
+    } catch (error) {
+        console.error('执行步骤失败:', error);
+        addDebugLog('失败', step, error.message);
+        document.getElementById('stepNext').disabled = true;
+        document.getElementById('stepRun').disabled = true;
+    }
+}
+
+// 执行剩余步骤
+async function executeRemainingSteps(taskId, autoClose) {
+    while (currentStepIndex < currentTaskSteps.length - 1 && !executionPaused) {
+        await executeNextStep(taskId, autoClose);
+    }
+}
+
+// 更新调试界面
+function updateDebugUI(step) {
+    // 显示当前步骤信息
+    const stepInfo = getStepDescription(step);
+    document.getElementById('currentStep').innerHTML = `
+        <div class="alert alert-info mb-0">
+            <strong>步骤 ${currentStepIndex + 1}/${currentTaskSteps.length}:</strong> ${stepInfo}
+        </div>
+    `;
+    
+    // 更新进度条
+    updateProgress();
+}
+
+// 更新进度条
+function updateProgress() {
+    const progress = ((currentStepIndex + 1) / currentTaskSteps.length) * 100;
+    document.getElementById('stepProgress').style.width = `${progress}%`;
+    document.getElementById('stepProgress').setAttribute('aria-valuenow', progress);
+}
+
+// 添加调试日志
+function addDebugLog(status, step, error = null) {
+    const logDiv = document.getElementById('debugLog');
+    const timestamp = new Date().toLocaleTimeString();
+    const stepInfo = getStepDescription(step);
+    
+    const logEntry = document.createElement('div');
+    logEntry.className = `log-entry ${status === '成功' ? 'text-success' : 'text-danger'}`;
+    
+    let errorDetails = '';
+    if (error) {
+        try {
+            // 尝试解析错误信息为JSON
+            const errorObj = JSON.parse(error);
+            errorDetails = `
+                <div class="text-danger small mt-1">
+                    <strong>错误详情：</strong><br>
+                    ${errorObj.message || error}<br>
+                    ${errorObj.details ? `<strong>详细信息：</strong><br>${errorObj.details}` : ''}
+                    ${errorObj.suggestion ? `<br><strong>建议：</strong><br>${errorObj.suggestion}` : ''}
+                </div>
+            `;
+        } catch (e) {
+            // 如果不是JSON格式，直接显示错误信息
+            errorDetails = `<div class="text-danger small mt-1">${error}</div>`;
+        }
+    }
+    
+    logEntry.innerHTML = `
+        <div class="d-flex align-items-center">
+            <small class="text-muted">[${timestamp}]</small>
+            <span class="mx-1 badge ${status === '成功' ? 'bg-success' : 'bg-danger'}">${status}</span>
+            <span class="flex-grow-1">${stepInfo}</span>
+        </div>
+        ${errorDetails}
+    `;
+    
+    logDiv.appendChild(logEntry);
+    logDiv.scrollTop = logDiv.scrollHeight;
+}
+
+// 获取步骤描述
+function getStepDescription(step) {
+    let description = '';
+    switch (step.action) {
+        case 'navigate':
+            description = `打开网页 ${step.url}`;
+            break;
+        case 'click':
+            description = `点击元素 ${step.xpath}`;
+            break;
+        case 'input':
+            description = `在 ${step.xpath} 输入文本 "${step.value}"`;
+            break;
+        case 'wait':
+            description = `等待 ${step.seconds} 秒`;
+            break;
+        case 'mouse_click':
+            description = `鼠标点击坐标 (${step.x}, ${step.y})`;
+            break;
+        case 'mouse_double_click':
+            description = `鼠标双击坐标 (${step.x}, ${step.y})`;
+            break;
+        case 'mouse_right_click':
+            description = `鼠标右键点击坐标 (${step.x}, ${step.y})`;
+            break;
+        case 'mouse_move':
+            description = `移动鼠标到坐标 (${step.x}, ${step.y})`;
+            break;
+        case 'mouse_drag':
+            description = `拖拽鼠标从 (${step.start_x}, ${step.start_y}) 到 (${step.end_x}, ${step.end_y})`;
+            break;
+        case 'key_combination':
+            description = `按下组合键 ${step.keys.join('+')}`;
+            break;
+        case 'type_text':
+            description = `输入文本 "${step.text}"`;
+            break;
+        default:
+            description = `执行 ${step.action}`;
+    }
+    return description;
+}
+
+// 执行任务
+async function executeTask(taskId, autoClose = true) {
+    try {
+        const response = await fetch('{{ url_for("rpa.execute_rpa") }}', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'X-CSRFToken': document.querySelector('meta[name="csrf-token"]').getAttribute('content')
+            },
+            body: JSON.stringify({ task_id: taskId, auto_close: autoClose })
+        });
+
+        if (!response.ok) {
+            const errorData = await response.json();
+            throw new Error(errorData.error || `HTTP error! status: ${response.status}`);
+        }
+
+        const result = await response.json();
+        showAlert('任务执行成功！');
+        loadTasks();  // 刷新列表以更新最后执行时间
+        
+        // 显示执行结果
+        if (result.data.length > 0 || result.files.length > 0) {
+            console.log('执行结果:', result);
+        }
+    } catch (error) {
+        console.error('执行任务失败:', error);
+        showAlert('执行任务失败: ' + error.message, 'danger');
+    }
+}
+
+// 添加基本操作步骤
+function addBasicStep() {
+    const step = {
+        action: 'navigate',
+        url: ''
+    };
+    addStepToUI(step);
+}
+
+// 添加鼠标操作步骤
+function addMouseStep() {
+    const step = {
+        action: 'mouse_click',
+        x: 0,
+        y: 0
+    };
+    addStepToUI(step);
+}
+
+// 添加键盘操作步骤
+function addKeyboardStep() {
+    const step = {
+        action: 'key_combination',
+        keys: []
+    };
+    addStepToUI(step);
+}
+
+// 添加等待步骤
+function addWaitStep() {
+    const step = {
+        action: 'wait',
+        seconds: 1
+    };
+    addStepToUI(step);
+}
+
+// 添加步骤到UI
+function addStepToUI(step) {
+    const stepDiv = document.createElement('div');
+    stepDiv.className = 'card mb-2';
+    
+    let fieldsHtml = '';
+    if (step.action === 'navigate' || step.action === 'click' || step.action === 'input') {
+        fieldsHtml = getBasicStepFields(step);
+    } else if (step.action.startsWith('mouse_')) {
+        fieldsHtml = getMouseStepFields(step);
+    } else if (step.action === 'key_combination' || step.action === 'type_text') {
+        fieldsHtml = getKeyboardStepFields(step);
+    } else if (step.action === 'wait') {
+        fieldsHtml = getWaitStepFields(step);
+    }
+    
+    stepDiv.innerHTML = `
+        <div class="card-body">
+            <div class="d-flex justify-content-between mb-2">
+                <select class="form-select w-auto" onchange="updateStepFields(this)">
+                    <optgroup label="基本操作">
+                        <option value="navigate" ${step.action === 'navigate' ? 'selected' : ''}>打开网页</option>
+                        <option value="click" ${step.action === 'click' ? 'selected' : ''}>点击元素</option>
+                        <option value="input" ${step.action === 'input' ? 'selected' : ''}>输入文本</option>
+                        <option value="wait" ${step.action === 'wait' ? 'selected' : ''}>等待</option>
+                    </optgroup>
+                    <optgroup label="鼠标操作">
+                        <option value="mouse_click" ${step.action === 'mouse_click' ? 'selected' : ''}>点击</option>
+                        <option value="mouse_double_click" ${step.action === 'mouse_double_click' ? 'selected' : ''}>双击</option>
+                        <option value="mouse_right_click" ${step.action === 'mouse_right_click' ? 'selected' : ''}>右键</option>
+                        <option value="mouse_move" ${step.action === 'mouse_move' ? 'selected' : ''}>移动</option>
+                        <option value="mouse_drag" ${step.action === 'mouse_drag' ? 'selected' : ''}>拖拽</option>
+                    </optgroup>
+                    <optgroup label="键盘操作">
+                        <option value="key_combination" ${step.action === 'key_combination' ? 'selected' : ''}>组合键</option>
+                        <option value="type_text" ${step.action === 'type_text' ? 'selected' : ''}>输入文本</option>
+                    </optgroup>
+                </select>
+                <div class="btn-group">
+                    <button type="button" class="btn btn-sm btn-outline-primary test-step" onclick="testStep(this)">
+                        测试 <i class="fas fa-play"></i>
+                    </button>
+                    <button type="button" class="btn btn-sm btn-outline-danger" onclick="this.closest('.card').remove()">
+                        删除
+                    </button>
+                </div>
+            </div>
+            <div class="step-fields">
+                ${fieldsHtml}
+            </div>
+        </div>
+    `;
+    
+    document.getElementById('taskSteps').appendChild(stepDiv);
+    
+    if (step.action === 'key_combination') {
+        const keysSelect = stepDiv.querySelector('.keys-select');
+        if (keysSelect) {
+            initializeKeysSelect(keysSelect, step.keys);
+        }
+    }
+}
+
+// 获取基本步骤字段
+function getBasicStepFields(step) {
+    if (step.action === 'navigate') {
+        return `
+            <div class="mb-2">
+                <label class="form-label">URL</label>
+                <input type="url" class="form-control" value="${step.url || ''}" placeholder="https://example.com">
+            </div>
+        `;
+    } else if (step.action === 'click' || step.action === 'input') {
+        let html = `
+            <div class="mb-2">
+                <label class="form-label">选择器类型</label>
+                <select class="form-select selector-type" onchange="updateSelectorPlaceholder(this)">
+                    <option value="xpath" ${step.selectorType === 'xpath' ? 'selected' : ''}>XPath</option>
+                    <option value="fullXPath" ${step.selectorType === 'fullXPath' ? 'selected' : ''}>Full XPath</option>
+                    <option value="selector" ${step.selectorType === 'selector' ? 'selected' : ''}>CSS Selector</option>
+                </select>
+            </div>
+            <div class="mb-2">
+                <label class="form-label">选择器</label>
+                <div class="input-group">
+                    <input type="text" class="form-control selector-value" value="${step.xpath || ''}" 
+                           placeholder="//button[@id='submit']">
+                    <button class="btn btn-outline-secondary" type="button" onclick="testSelector(this)">
+                        测试选择器
+                    </button>
+                </div>
+                <div class="selector-test-result mt-1 small"></div>
+            </div>
+        `;
+        if (step.action === 'input') {
+            html += `
+                <div class="mb-2">
+                    <label class="form-label">输入值</label>
+                    <input type="text" class="form-control" value="${step.value || ''}" placeholder="要输入的文本">
+                </div>
+            `;
+        }
+        return html;
+    }
+    return '';
+}
+
+// 更新选择器占位符
+function updateSelectorPlaceholder(select) {
+    const input = select.closest('.card-body').querySelector('.selector-value');
+    switch (select.value) {
+        case 'xpath':
+            input.placeholder = "//button[@id='submit']";
+            break;
+        case 'fullXPath':
+            input.placeholder = "/html/body/div/main/button";
+            break;
+        case 'selector':
+            input.placeholder = "#submit, .btn-submit";
+            break;
+    }
+}
+
+// 测试选择器
+async function testSelector(button) {
+    const stepDiv = button.closest('.card-body');
+    const selectorType = stepDiv.querySelector('.selector-type').value;
+    const selectorValue = stepDiv.querySelector('.selector-value').value;
+    const resultDiv = stepDiv.querySelector('.selector-test-result');
+    
+    if (!selectorValue) {
+        resultDiv.innerHTML = '<span class="text-danger">请输入选择器值</span>';
+        return;
+    }
+    
+    try {
+        const response = await fetch('{{ url_for("rpa.test_selector") }}', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'X-CSRFToken': document.querySelector('meta[name="csrf-token"]').getAttribute('content')
+            },
+            body: JSON.stringify({
+                selector_type: selectorType,
+                selector_value: selectorValue
+            })
+        });
+
+        const data = await response.json();
+        if (data.success) {
+            resultDiv.innerHTML = `<span class="text-success">✓ 找到 ${data.count} 个元素</span>`;
+        } else {
+            resultDiv.innerHTML = `<span class="text-danger">未找到匹配的元素</span>`;
+        }
+    } catch (error) {
+        resultDiv.innerHTML = `<span class="text-danger">测试失败: ${error.message}</span>`;
+    }
+}
+
+// 获取鼠标步骤字段
+function getMouseStepFields(step) {
+    if (step.action === 'mouse_drag') {
+        return `
+            <div class="row">
+                <div class="col-6">
+                    <label class="form-label">起始位置</label>
+                    <div class="input-group mb-2">
+                        <span class="input-group-text">X</span>
+                        <input type="number" class="form-control" value="${step.start_x || 0}">
+                        <span class="input-group-text">Y</span>
+                        <input type="number" class="form-control" value="${step.start_y || 0}">
+                    </div>
+                </div>
+                <div class="col-6">
+                    <label class="form-label">结束位置</label>
+                    <div class="input-group mb-2">
+                        <span class="input-group-text">X</span>
+                        <input type="number" class="form-control" value="${step.end_x || 0}">
+                        <span class="input-group-text">Y</span>
+                        <input type="number" class="form-control" value="${step.end_y || 0}">
+                    </div>
+                </div>
+            </div>
+        `;
+    } else {
+        return `
+            <div class="input-group mb-2">
+                <span class="input-group-text">X</span>
+                <input type="number" class="form-control" value="${step.x || 0}">
+                <span class="input-group-text">Y</span>
+                <input type="number" class="form-control" value="${step.y || 0}">
+            </div>
+        `;
+    }
+}
+
+// 获取键盘步骤字段
+function getKeyboardStepFields(step) {
+    if (step.action === 'key_combination') {
+        return `
+            <div class="mb-2">
+                <label class="form-label">选择按键</label>
+                <select class="form-select keys-select" multiple>
+                    <optgroup label="功能键">
+                        <option value="ctrl">Ctrl</option>
+                        <option value="alt">Alt</option>
+                        <option value="shift">Shift</option>
+                        <option value="win">Win</option>
+                    </optgroup>
+                    <optgroup label="常用键">
+                        <option value="enter">Enter</option>
+                        <option value="space">Space</option>
+                        <option value="tab">Tab</option>
+                        <option value="esc">Esc</option>
+                    </optgroup>
+                    <optgroup label="字母">
+                        ${Array.from('ABCDEFGHIJKLMNOPQRSTUVWXYZ').map(letter => 
+                            `<option value="${letter.toLowerCase()}">${letter}</option>`
+                        ).join('')}
+                    </optgroup>
+                    <optgroup label="数字">
+                        ${Array.from('0123456789').map(num => 
+                            `<option value="${num}">${num}</option>`
+                        ).join('')}
+                    </optgroup>
+                </select>
+            </div>
+        `;
+    } else if (step.action === 'type_text') {
+        return `
+            <div class="mb-2">
+                <label class="form-label">要输入的文本</label>
+                <input type="text" class="form-control" value="${step.text || ''}" placeholder="要输入的文本">
+            </div>
+        `;
+    }
+    return '';
+}
+
+// 获取等待步骤字段
+function getWaitStepFields(step) {
+    return `
+        <div class="mb-2">
+            <label class="form-label">等待时间（秒）</label>
+            <input type="number" class="form-control" value="${step.seconds || 1}" min="0" step="0.1">
+        </div>
+    `;
+}
+
+// 初始化键盘组合键选择
+function initializeKeysSelect(select, selectedKeys = []) {
+    Array.from(select.options).forEach(option => {
+        option.selected = selectedKeys.includes(option.value);
+    });
+}
+
+// 更新步骤字段
+function updateStepFields(select) {
+    const stepDiv = select.closest('.card-body');
+    const fieldsDiv = stepDiv.querySelector('.step-fields');
+    const action = select.value;
+    
+    let fields = '';
+    if (['navigate', 'click', 'input'].includes(action)) {
+        fields = getBasicStepFields({action});
+    } else if (action.startsWith('mouse_')) {
+        fields = getMouseStepFields({action});
+    } else if (action === 'key_combination' || action === 'type_text') {
+        fields = getKeyboardStepFields({action});
+    } else if (action === 'wait') {
+        fields = getWaitStepFields({action});
+    }
+    
+    fieldsDiv.innerHTML = fields;
+    
+    if (action === 'key_combination') {
+        const keysSelect = fieldsDiv.querySelector('.keys-select');
+        if (keysSelect) {
+            initializeKeysSelect(keysSelect);
+        }
+    }
+}
+
+// 收集步骤数据
+function collectSteps() {
+    return Array.from(document.getElementById('taskSteps').children).map(stepDiv => {
+        const select = stepDiv.querySelector('select');
+        const action = select.value;
+        const step = { action };
+        
+        if (['navigate', 'click', 'input'].includes(action)) {
+        if (action === 'navigate') {
+            step.url = stepDiv.querySelector('input[type="url"]').value;
+            } else {
+                const selectorType = stepDiv.querySelector('.selector-type').value;
+                const selectorValue = stepDiv.querySelector('.selector-value').value;
+                step.selectorType = selectorType;
+                step.xpath = selectorValue; // 保持兼容性，实际使用时会根据selectorType处理
+                
+            if (action === 'input') {
+                    step.value = stepDiv.querySelector('input[type="text"]:not(.selector-value)').value;
+                }
+            }
+        } else if (action.startsWith('mouse_')) {
+            if (action === 'mouse_drag') {
+                const inputs = stepDiv.querySelectorAll('input[type="number"]');
+                step.start_x = parseInt(inputs[0].value);
+                step.start_y = parseInt(inputs[1].value);
+                step.end_x = parseInt(inputs[2].value);
+                step.end_y = parseInt(inputs[3].value);
+            } else {
+                const inputs = stepDiv.querySelectorAll('input[type="number"]');
+                step.x = parseInt(inputs[0].value);
+                step.y = parseInt(inputs[1].value);
+            }
+        } else if (action === 'key_combination') {
+            step.keys = Array.from(stepDiv.querySelector('.keys-select').selectedOptions).map(opt => opt.value);
+        } else if (action === 'type_text') {
+            step.text = stepDiv.querySelector('input[type="text"]').value;
+        } else if (action === 'wait') {
+            step.seconds = parseFloat(stepDiv.querySelector('input[type="number"]').value) || 1;
+        }
+        
+        return step;
+    });
+}
+
+// 删除任务
+async function deleteTask(taskId) {
+    if (!confirm('确定要删除这个任务吗？')) {
+        return;
+    }
+    
+    try {
+        const response = await fetch(`/rpa/task/${taskId}`, {
+            method: 'DELETE',
+            headers: {
+                'X-CSRFToken': document.querySelector('meta[name="csrf-token"]').getAttribute('content')
+            }
+        });
+
+        if (!response.ok) {
+            const errorData = await response.json();
+            throw new Error(errorData.error || `HTTP error! status: ${response.status}`);
+        }
+
+        showAlert('任务删除成功！');
+        loadTasks();
+    } catch (error) {
+        console.error('删除任务失败:', error);
+        showAlert('删除任务失败: ' + error.message, 'danger');
+    }
+}
+
+// 测试单个步骤
+async function testStep(button) {
+    const stepDiv = button.closest('.card');
+    const stepIndex = Array.from(stepDiv.parentNode.children).indexOf(stepDiv);
+    const taskId = document.getElementById('taskId').value;
+    
+    // 如果是新建任务，需要先保存
+    if (!taskId) {
+        showAlert('请先保存任务后再测试步骤', 'warning');
+        return;
+    }
+    
+    // 获取当前步骤数据
+    const steps = collectSteps();
+    const step = steps[stepIndex];
+    
+    // 更新调试UI
+    document.getElementById('currentStepEdit').innerHTML = `
+        <div class="alert alert-info mb-0">
+            <strong>测试步骤 ${stepIndex + 1}:</strong> ${getStepDescription(step)}
+        </div>
+    `;
+    
+    try {
+        const response = await fetch('{{ url_for("rpa.execute_step") }}', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'X-CSRFToken': document.querySelector('meta[name="csrf-token"]').getAttribute('content')
+            },
+            body: JSON.stringify({
+                task_id: taskId,
+                step_index: stepIndex,
+                auto_close: false
+            })
+        });
+
+        if (!response.ok) {
+            const errorData = await response.json();
+            throw new Error(errorData.error || `HTTP error! status: ${response.status}`);
+        }
+
+        const result = await response.json();
+        addDebugLogEdit('成功', step);
+        
+    } catch (error) {
+        console.error('执行步骤失败:', error);
+        addDebugLogEdit('失败', step, error.message);
+    }
+}
+
+// 添加编辑模式下的调试日志
+function addDebugLogEdit(status, step, error = null) {
+    const logDiv = document.getElementById('debugLogEdit');
+    const timestamp = new Date().toLocaleTimeString();
+    const stepInfo = getStepDescription(step);
+    
+    const logEntry = document.createElement('div');
+    logEntry.className = `log-entry ${status === '成功' ? 'text-success' : 'text-danger'}`;
+    
+    let errorDetails = '';
+    if (error) {
+        try {
+            // 尝试解析错误信息为JSON
+            const errorObj = JSON.parse(error);
+            errorDetails = `
+                <div class="text-danger small mt-1">
+                    <strong>错误详情：</strong><br>
+                    ${errorObj.message || error}<br>
+                    ${errorObj.details ? `<strong>详细信息：</strong><br>${errorObj.details}` : ''}
+                    ${errorObj.suggestion ? `<br><strong>建议：</strong><br>${errorObj.suggestion}` : ''}
+                </div>
+            `;
+        } catch (e) {
+            // 如果不是JSON格式，直接显示错误信息
+            errorDetails = `<div class="text-danger small mt-1">${error}</div>`;
+        }
+    }
+    
+    logEntry.innerHTML = `
+        <div class="d-flex align-items-center">
+            <small class="text-muted">[${timestamp}]</small>
+            <span class="mx-1 badge ${status === '成功' ? 'bg-success' : 'bg-danger'}">${status}</span>
+            <span class="flex-grow-1">${stepInfo}</span>
+        </div>
+        ${errorDetails}
+    `;
+    
+    logDiv.appendChild(logEntry);
+    logDiv.scrollTop = logDiv.scrollHeight;
+}
+
+// 页面加载时加载任务列表
+document.addEventListener('DOMContentLoaded', loadTasks);
+
+// 关闭模态框时重置表单
+document.getElementById('taskModal').addEventListener('hidden.bs.modal', function () {
+    document.getElementById('taskForm').reset();
+    document.getElementById('taskSteps').innerHTML = '';
+    document.getElementById('taskId').value = '';
+});
+
+// 关闭任务模态框
+function closeTaskModal() {
+    if (document.getElementById('taskSteps').children.length > 0) {
+        if (confirm('确定要关闭吗？未保存的更改将会丢失。')) {
+            const modal = bootstrap.Modal.getInstance(document.getElementById('taskModal'));
+            modal.hide();
+            document.getElementById('taskForm').reset();
+            document.getElementById('taskSteps').innerHTML = '';
+            document.getElementById('taskId').value = '';
+        }
+    } else {
+        const modal = bootstrap.Modal.getInstance(document.getElementById('taskModal'));
+        modal.hide();
+        document.getElementById('taskForm').reset();
+        document.getElementById('taskSteps').innerHTML = '';
+        document.getElementById('taskId').value = '';
+    }
+}
+</script>
+{% endblock %} 
