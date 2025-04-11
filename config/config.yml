@@ -1,0 +1,12 @@
+# 数据库配置
+database:
+  host: 118.31.5.142
+  port: 3306
+  user: root
+  password: P@ssHrkj
+  database: hairui-agent
+
+# 日志配置
+logging:
+  level: INFO
+  file: app.log

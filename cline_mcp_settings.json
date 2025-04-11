@@ -1,0 +1,18 @@
+{
+  "mcpServers": {
+    "filesystem": {
+      "command": "docker",
+      "args": [
+        "run",
+        "-it",
+        "--rm",
+        "--mount", "type=bind,src=e:/workspace/hr/superai/superai,dst=/projects/superai",
+        "mcp/filesystem",
+        "/projects/superai"
+      ],
+      "env": {
+        "NODE_ENV": "production"
+      }
+    }
+  }
+}

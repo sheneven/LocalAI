@@ -1,0 +1,22 @@
+{
+    "sourceFile": "utils/AIUtils.py",
+    "activeCommit": 0,
+    "commits": [
+        {
+            "activePatchIndex": 1,
+            "patches": [
+                {
+                    "date": 1744338557994,
+                    "content": "Index: \n===================================================================\n--- \n+++ \n"
+                },
+                {
+                    "date": 1744338896488,
+                    "content": "Index: \n===================================================================\n--- \n+++ \n@@ -27,8 +27,9 @@\n         \"system\": system_message,\r\n         \"stream\": True\r\n     }\r\n     print(ollama_url)\r\n+    '''\r\n     with requests.post(ollama_url, headers=headers, json=payload, stream=True) as res:\r\n         res.raise_for_status()\r\n         for line in res.iter_lines(decode_unicode=True):\r\n             if line:\r\n@@ -38,5 +39,5 @@\n     response = requests.post(ollama_url, headers=headers, data=json.dumps(payload))\r\n     print(\"=========\")\r\n     print(response.json())\r\n     return response.json().get('response', '')+\"\\n\"\r\n-    '''\n\\ No newline at end of file\n+    \n\\ No newline at end of file\n"
+                }
+            ],
+            "date": 1744338557994,
+            "name": "Commit-0",
+            "content": "import pandas as pd\r\nimport requests\r\nimport json\r\n\r\ng_ollama_url = \"http://10.0.0.10:11434/\"\r\n\r\ndef model_generate(prompt, model=\"qwq:latest\", system_message=\"\"):\r\n    global g_ollama_url\r\n    feedback = \"\"\r\n    url = g_ollama_url + \"api/generate\"\r\n    for res in ollama_util(url, model, prompt,system_message):\r\n        if \"response\" in res:\r\n            res['response']\r\n            feedback += res['response']\r\n    return feedback\r\ndef model_chat(prompt, model=\"qwq:latest\"):\r\n    global g_ollama_url\r\n    url = g_ollama_url + \"api/chat\"\r\n    return ollama_util(url, model_name, prompt)\r\n\r\n# 定义一个函数，用于通过 Ollama 调用大模型\r\ndef ollama_util(ollama_url, model_name, prompt,system_message=\"\"):\r\n    headers = {'Content-Type': 'application/json'}\r\n    payload = {\r\n        \"model\": model_name,\r\n        \"prompt\": prompt,\r\n        \"system\": system_message,\r\n        \"stream\": True\r\n    }\r\n    print(ollama_url)\r\n    with requests.post(ollama_url, headers=headers, json=payload, stream=True) as res:\r\n        res.raise_for_status()\r\n        for line in res.iter_lines(decode_unicode=True):\r\n            if line:\r\n                yield json.loads(line)\r\n\r\n    '''\r\n    response = requests.post(ollama_url, headers=headers, data=json.dumps(payload))\r\n    print(\"=========\")\r\n    print(response.json())\r\n    return response.json().get('response', '')+\"\\n\"\r\n    '''"
+        }
+    ]
+}
