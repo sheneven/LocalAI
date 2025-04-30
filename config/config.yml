@@ -1,7 +1,8 @@
 # 数据库配置
 database:
-  host: 118.31.5.142
-  port: 3306
+  #host: 118.31.5.142
+  host: 10.0.0.7
+  port: 13306
   user: root
   password: P@ssHrkj
   database: hairui-agent

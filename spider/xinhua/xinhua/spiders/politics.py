@@ -2,7 +2,13 @@ import scrapy
 from ..items import XinhuaItem
 from datetime import datetime
 from scrapy.selector import Selector
-from utils.DateUtil import getTodayDate
+#from utils.DateUtil import getTodayDate
+from bs4 import BeautifulSoup
+import logging
+
+
+
+
 
 class PoliticsSpider(scrapy.Spider):
     name = "politics_spider"
@@ -15,21 +21,47 @@ class PoliticsSpider(scrapy.Spider):
         },
     }
 
-    def __init__(self, start_date=None, end_date=None, *args, **kwargs):
+    def __init__(self, full_config=None, web_config=None,start_date=None, end_date=None, *args, **kwargs):
         super(PoliticsSpider, self).__init__(*args, **kwargs)
         self.start_date = datetime.strptime(start_date, '%Y-%m-%d') if start_date else None
         self.end_date = datetime.strptime(end_date, '%Y-%m-%d') if end_date else None
+        self.web_config = web_config if web_config else None
+        self.full_config = full_config
     def parse(self, response):
         # 提取文章链接
-        article_links = response.css('a::attr(href)').getall()
-        for link in article_links:
+        '''
+        li_list = response.css('.xpage-content-list .tit a')
+        print(li_list)
+        for article in li_list.getall():
+            one = BeautifulSoup(article, "html.parser")
+            print(one.get_text())
+            print(article)
+            print("============")
+        #article_links = response.css('a::attr(href)').getall()
+        '''
+        article_links = response.css('.xpage-content-list .tit a').getall()
+        flag = 0
+        for row in article_links:
+            one = BeautifulSoup(row, "html.parser")
+            print(one)
+            title = one.get_text()
+            link = one.a.attrs['href']
+            print(f"{title}:{link}\n")
+            if title and self.web_config['last'] == title:
+                logging.info(f"是上一次最后一条信息")
+                break
+            if flag == 0:
+                flag = 1
+                self.web_config['last'] = title            
             if link and 'news.cn' in link and '/politics/' in link:
                 yield response.follow(link, self.parse_article)
-
+        self.full_config.getMysql().update_data("web_list", f"last='{self.web_config['last']}'", f"id={self.web_config['id']}")
         # 处理分页
         next_page = response.css('a.next::attr(href)').get()
         if next_page is not None:
             yield response.follow(next_page, self.parse)
+    def test(self, response):
+        pass
     def parse_article(self, response):
         item = XinhuaItem()
         #print(response)
@@ -86,9 +118,11 @@ class PoliticsSpider(scrapy.Spider):
         # 使用 Selector 来处理响应，方便使用 XPath
         # 尝试从时间显示的元素中获取年份，假设时间在带有 h-time 类的元素中
         date_str = response.url.split("/")[4]  # 获取 "20250311"
+        '''
         if date_str is None or len(date_str) != 8:
             date_str = getTodayDate()
-        '''
+        
+        
         full_date = response.xpath('//div[@class="header-time"]//text()').getall()
         print(full_date)
         clean_date = "".join(full_date).strip()  # 合并文本并清理空白

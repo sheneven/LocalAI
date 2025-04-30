@@ -3,7 +3,7 @@
     "activeCommit": 0,
     "commits": [
         {
-            "activePatchIndex": 1,
+            "activePatchIndex": 29,
             "patches": [
                 {
                     "date": 1744338557994,
@@ -12,6 +12,118 @@
                 {
                     "date": 1744338896488,
                     "content": "Index: \n===================================================================\n--- \n+++ \n@@ -27,8 +27,9 @@\n         \"system\": system_message,\r\n         \"stream\": True\r\n     }\r\n     print(ollama_url)\r\n+    '''\r\n     with requests.post(ollama_url, headers=headers, json=payload, stream=True) as res:\r\n         res.raise_for_status()\r\n         for line in res.iter_lines(decode_unicode=True):\r\n             if line:\r\n@@ -38,5 +39,5 @@\n     response = requests.post(ollama_url, headers=headers, data=json.dumps(payload))\r\n     print(\"=========\")\r\n     print(response.json())\r\n     return response.json().get('response', '')+\"\\n\"\r\n-    '''\n\\ No newline at end of file\n+    \n\\ No newline at end of file\n"
+                },
+                {
+                    "date": 1744339719904,
+                    "content": "Index: \n===================================================================\n--- \n+++ \n@@ -27,9 +27,8 @@\n         \"system\": system_message,\r\n         \"stream\": True\r\n     }\r\n     print(ollama_url)\r\n-    '''\r\n     with requests.post(ollama_url, headers=headers, json=payload, stream=True) as res:\r\n         res.raise_for_status()\r\n         for line in res.iter_lines(decode_unicode=True):\r\n             if line:\r\n@@ -39,5 +38,7 @@\n     response = requests.post(ollama_url, headers=headers, data=json.dumps(payload))\r\n     print(\"=========\")\r\n     print(response.json())\r\n     return response.json().get('response', '')+\"\\n\"\r\n+    '''\r\n+\r\n     \n\\ No newline at end of file\n"
+                },
+                {
+                    "date": 1744339846683,
+                    "content": "Index: \n===================================================================\n--- \n+++ \n@@ -7,13 +7,17 @@\n def model_generate(prompt, model=\"qwq:latest\", system_message=\"\"):\r\n     global g_ollama_url\r\n     feedback = \"\"\r\n     url = g_ollama_url + \"api/generate\"\r\n+    '''\r\n     for res in ollama_util(url, model, prompt,system_message):\r\n         if \"response\" in res:\r\n             res['response']\r\n             feedback += res['response']\r\n     return feedback\r\n+    '''\r\n+    return ollama_util(url, model_name, prompt, system_message)\r\n+\r\n def model_chat(prompt, model=\"qwq:latest\"):\r\n     global g_ollama_url\r\n     url = g_ollama_url + \"api/chat\"\r\n     return ollama_util(url, model_name, prompt)\r\n"
+                },
+                {
+                    "date": 1744339857936,
+                    "content": "Index: \n===================================================================\n--- \n+++ \n@@ -31,8 +31,9 @@\n         \"system\": system_message,\r\n         \"stream\": True\r\n     }\r\n     print(ollama_url)\r\n+     '''\r\n     with requests.post(ollama_url, headers=headers, json=payload, stream=True) as res:\r\n         res.raise_for_status()\r\n         for line in res.iter_lines(decode_unicode=True):\r\n             if line:\r\n@@ -42,7 +43,7 @@\n     response = requests.post(ollama_url, headers=headers, data=json.dumps(payload))\r\n     print(\"=========\")\r\n     print(response.json())\r\n     return response.json().get('response', '')+\"\\n\"\r\n-    '''\r\n+   \r\n \r\n     \n\\ No newline at end of file\n"
+                },
+                {
+                    "date": 1744339890063,
+                    "content": "Index: \n===================================================================\n--- \n+++ \n@@ -31,9 +31,9 @@\n         \"system\": system_message,\r\n         \"stream\": True\r\n     }\r\n     print(ollama_url)\r\n-     '''\r\n+    '''\r\n     with requests.post(ollama_url, headers=headers, json=payload, stream=True) as res:\r\n         res.raise_for_status()\r\n         for line in res.iter_lines(decode_unicode=True):\r\n             if line:\r\n"
+                },
+                {
+                    "date": 1744339912191,
+                    "content": "Index: \n===================================================================\n--- \n+++ \n@@ -14,9 +14,9 @@\n             res['response']\r\n             feedback += res['response']\r\n     return feedback\r\n     '''\r\n-    return ollama_util(url, model_name, prompt, system_message)\r\n+    return ollama_util(url, model, prompt, system_message)\r\n \r\n def model_chat(prompt, model=\"qwq:latest\"):\r\n     global g_ollama_url\r\n     url = g_ollama_url + \"api/chat\"\r\n"
+                },
+                {
+                    "date": 1744340330359,
+                    "content": "Index: \n===================================================================\n--- \n+++ \n@@ -3,9 +3,9 @@\n import json\r\n \r\n g_ollama_url = \"http://10.0.0.10:11434/\"\r\n \r\n-def model_generate(prompt, model=\"qwq:latest\", system_message=\"\"):\r\n+def model_generate(prompt, model=\"qwq:latest\", system_message=\"\",output=None):\r\n     global g_ollama_url\r\n     feedback = \"\"\r\n     url = g_ollama_url + \"api/generate\"\r\n     '''\r\n"
+                },
+                {
+                    "date": 1744340395231,
+                    "content": "Index: \n===================================================================\n--- \n+++ \n@@ -7,16 +7,16 @@\n def model_generate(prompt, model=\"qwq:latest\", system_message=\"\",output=None):\r\n     global g_ollama_url\r\n     feedback = \"\"\r\n     url = g_ollama_url + \"api/generate\"\r\n-    '''\r\n+    \r\n     for res in ollama_util(url, model, prompt,system_message):\r\n         if \"response\" in res:\r\n-            res['response']\r\n+            output.AppendText(res['response'])\r\n             feedback += res['response']\r\n     return feedback\r\n-    '''\r\n-    return ollama_util(url, model, prompt, system_message)\r\n+    \r\n+    #return ollama_util(url, model, prompt, system_message)\r\n \r\n def model_chat(prompt, model=\"qwq:latest\"):\r\n     global g_ollama_url\r\n     url = g_ollama_url + \"api/chat\"\r\n"
+                },
+                {
+                    "date": 1744340425540,
+                    "content": "Index: \n===================================================================\n--- \n+++ \n@@ -10,9 +10,10 @@\n     url = g_ollama_url + \"api/generate\"\r\n     \r\n     for res in ollama_util(url, model, prompt,system_message):\r\n         if \"response\" in res:\r\n-            output.AppendText(res['response'])\r\n+            if None !=  output:\r\n+                output.AppendText(res['response'])\r\n             feedback += res['response']\r\n     return feedback\r\n     \r\n     #return ollama_util(url, model, prompt, system_message)\r\n"
+                },
+                {
+                    "date": 1744340447899,
+                    "content": "Index: \n===================================================================\n--- \n+++ \n@@ -32,9 +32,8 @@\n         \"system\": system_message,\r\n         \"stream\": True\r\n     }\r\n     print(ollama_url)\r\n-    '''\r\n     with requests.post(ollama_url, headers=headers, json=payload, stream=True) as res:\r\n         res.raise_for_status()\r\n         for line in res.iter_lines(decode_unicode=True):\r\n             if line:\r\n@@ -44,7 +43,8 @@\n     response = requests.post(ollama_url, headers=headers, data=json.dumps(payload))\r\n     print(\"=========\")\r\n     print(response.json())\r\n     return response.json().get('response', '')+\"\\n\"\r\n+    '''\r\n    \r\n \r\n     \n\\ No newline at end of file\n"
+                },
+                {
+                    "date": 1744340458840,
+                    "content": "Index: \n===================================================================\n--- \n+++ \n@@ -36,8 +36,9 @@\n     with requests.post(ollama_url, headers=headers, json=payload, stream=True) as res:\r\n         res.raise_for_status()\r\n         for line in res.iter_lines(decode_unicode=True):\r\n             if line:\r\n+                print(line)\r\n                 yield json.loads(line)\r\n \r\n     '''\r\n     response = requests.post(ollama_url, headers=headers, data=json.dumps(payload))\r\n"
+                },
+                {
+                    "date": 1744351794204,
+                    "content": "Index: \n===================================================================\n--- \n+++ \n@@ -17,9 +17,9 @@\n     return feedback\r\n     \r\n     #return ollama_util(url, model, prompt, system_message)\r\n \r\n-def model_chat(prompt, model=\"qwq:latest\"):\r\n+def model_chat(prompt, model_name=\"qwq:latest\"):\r\n     global g_ollama_url\r\n     url = g_ollama_url + \"api/chat\"\r\n     return ollama_util(url, model_name, prompt)\r\n \r\n"
+                },
+                {
+                    "date": 1744351848068,
+                    "content": "Index: \n===================================================================\n--- \n+++ \n@@ -17,12 +17,12 @@\n     return feedback\r\n     \r\n     #return ollama_util(url, model, prompt, system_message)\r\n \r\n-def model_chat(prompt, model_name=\"qwq:latest\"):\r\n+def model_chat(prompt, model=\"qwq:latest\"):\r\n     global g_ollama_url\r\n     url = g_ollama_url + \"api/chat\"\r\n-    return ollama_util(url, model_name, prompt)\r\n+    return ollama_util(url, model, prompt)\r\n \r\n # 定义一个函数，用于通过 Ollama 调用大模型\r\n def ollama_util(ollama_url, model_name, prompt,system_message=\"\"):\r\n     headers = {'Content-Type': 'application/json'}\r\n"
+                },
+                {
+                    "date": 1744352186206,
+                    "content": "Index: \n===================================================================\n--- \n+++ \n@@ -17,9 +17,9 @@\n     return feedback\r\n     \r\n     #return ollama_util(url, model, prompt, system_message)\r\n \r\n-def model_chat(prompt, model=\"qwq:latest\"):\r\n+def model_chat(prompt, model=\"qwq:latest\",output =None):\r\n     global g_ollama_url\r\n     url = g_ollama_url + \"api/chat\"\r\n     return ollama_util(url, model, prompt)\r\n \r\n"
+                },
+                {
+                    "date": 1744352242415,
+                    "content": "Index: \n===================================================================\n--- \n+++ \n@@ -20,9 +20,15 @@\n \r\n def model_chat(prompt, model=\"qwq:latest\",output =None):\r\n     global g_ollama_url\r\n     url = g_ollama_url + \"api/chat\"\r\n-    return ollama_util(url, model, prompt)\r\n+    feedback = \"\"\r\n+    for res in ollama_util(url, model, prompt,\"\"):\r\n+        if \"response\" in res:\r\n+        if None !=  output:\r\n+            output.AppendText(res['response'])\r\n+        feedback += res['response']\r\n+    return feedback\r\n \r\n # 定义一个函数，用于通过 Ollama 调用大模型\r\n def ollama_util(ollama_url, model_name, prompt,system_message=\"\"):\r\n     headers = {'Content-Type': 'application/json'}\r\n"
+                },
+                {
+                    "date": 1744352303825,
+                    "content": "Index: \n===================================================================\n--- \n+++ \n@@ -23,11 +23,11 @@\n     url = g_ollama_url + \"api/chat\"\r\n     feedback = \"\"\r\n     for res in ollama_util(url, model, prompt,\"\"):\r\n         if \"response\" in res:\r\n-        if None !=  output:\r\n-            output.AppendText(res['response'])\r\n-        feedback += res['response']\r\n+            if None !=  output:\r\n+                output.AppendText(res['response'])\r\n+            feedback += res['response']\r\n     return feedback\r\n \r\n # 定义一个函数，用于通过 Ollama 调用大模型\r\n def ollama_util(ollama_url, model_name, prompt,system_message=\"\"):\r\n"
+                },
+                {
+                    "date": 1744352776300,
+                    "content": "Index: \n===================================================================\n--- \n+++ \n@@ -27,9 +27,22 @@\n             if None !=  output:\r\n                 output.AppendText(res['response'])\r\n             feedback += res['response']\r\n     return feedback\r\n+def ollama_chat(ollama_url, model_name, prompt,):\r\n+    messages = [\r\n+    {\r\n+        \"role\": \"user\",\r\n+        \"content\": \"你好，能介绍一下你自己吗？\"\r\n+    }\r\n+    ]\r\n \r\n+    # 构建请求体\r\n+    data = {\r\n+        \"model\": model_name,\r\n+        \"messages\": messages,\r\n+        \"stream\": True  # 开启流式输出\r\n+    }\r\n # 定义一个函数，用于通过 Ollama 调用大模型\r\n def ollama_util(ollama_url, model_name, prompt,system_message=\"\"):\r\n     headers = {'Content-Type': 'application/json'}\r\n     payload = {\r\n"
+                },
+                {
+                    "date": 1744352789185,
+                    "content": "Index: \n===================================================================\n--- \n+++ \n@@ -27,13 +27,13 @@\n             if None !=  output:\r\n                 output.AppendText(res['response'])\r\n             feedback += res['response']\r\n     return feedback\r\n-def ollama_chat(ollama_url, model_name, prompt,):\r\n+def ollama_chat(ollama_url, model_name, message):\r\n     messages = [\r\n     {\r\n         \"role\": \"user\",\r\n-        \"content\": \"你好，能介绍一下你自己吗？\"\r\n+        \"content\": message\r\n     }\r\n     ]\r\n \r\n     # 构建请求体\r\n"
+                },
+                {
+                    "date": 1744352822632,
+                    "content": "Index: \n===================================================================\n--- \n+++ \n@@ -41,8 +41,32 @@\n         \"model\": model_name,\r\n         \"messages\": messages,\r\n         \"stream\": True  # 开启流式输出\r\n     }\r\n+    try:\r\n+        # 发送 POST 请求并开启流式响应\r\n+        response = requests.post(ollama_url, json=data, stream=True)\r\n+        # 检查响应状态码\r\n+        response.raise_for_status()\r\n+\r\n+        # 流式处理响应内容\r\n+        for line in response.iter_lines():\r\n+            if line:\r\n+                # 解码并处理每一行数据\r\n+                line = line.decode('utf-8').lstrip(\"data: \")\r\n+                try:\r\n+                    import json\r\n+                    chunk = json.loads(line)\r\n+                    if 'choices' in chunk and len(chunk['choices']) > 0:\r\n+                        delta = chunk['choices'][0]['delta']\r\n+                        if 'content' in delta:\r\n+                            print(delta['content'], end='', flush=True)\r\n+                except json.JSONDecodeError:\r\n+                    print(f\"无法解析的 JSON 数据: {line}\")\r\n+\r\n+        print()  # 换行\r\n+    except requests.exceptions.RequestException as e:\r\n+        print(f\"请求发生错误: {e}\")\r\n # 定义一个函数，用于通过 Ollama 调用大模型\r\n def ollama_util(ollama_url, model_name, prompt,system_message=\"\"):\r\n     headers = {'Content-Type': 'application/json'}\r\n     payload = {\r\n"
+                },
+                {
+                    "date": 1744352893122,
+                    "content": "Index: \n===================================================================\n--- \n+++ \n@@ -21,9 +21,9 @@\n def model_chat(prompt, model=\"qwq:latest\",output =None):\r\n     global g_ollama_url\r\n     url = g_ollama_url + \"api/chat\"\r\n     feedback = \"\"\r\n-    for res in ollama_util(url, model, prompt,\"\"):\r\n+    for res in ollama_chat(url, model, prompt,\"\"):\r\n         if \"response\" in res:\r\n             if None !=  output:\r\n                 output.AppendText(res['response'])\r\n             feedback += res['response']\r\n"
+                },
+                {
+                    "date": 1744352901500,
+                    "content": "Index: \n===================================================================\n--- \n+++ \n@@ -21,9 +21,9 @@\n def model_chat(prompt, model=\"qwq:latest\",output =None):\r\n     global g_ollama_url\r\n     url = g_ollama_url + \"api/chat\"\r\n     feedback = \"\"\r\n-    for res in ollama_chat(url, model, prompt,\"\"):\r\n+    for res in ollama_chat(url, model, prompt):\r\n         if \"response\" in res:\r\n             if None !=  output:\r\n                 output.AppendText(res['response'])\r\n             feedback += res['response']\r\n"
+                },
+                {
+                    "date": 1744353711171,
+                    "content": "Index: \n===================================================================\n--- \n+++ \n@@ -46,9 +46,14 @@\n         # 发送 POST 请求并开启流式响应\r\n         response = requests.post(ollama_url, json=data, stream=True)\r\n         # 检查响应状态码\r\n         response.raise_for_status()\r\n-\r\n+        with requests.post(ollama_url, headers=headers, json=data, stream=True) as res:\r\n+            res.raise_for_status()\r\n+            for line in res.iter_lines(decode_unicode=True):\r\n+                if line:\r\n+                    print(line)\r\n+                    yield json.loads(line)\r\n         # 流式处理响应内容\r\n         for line in response.iter_lines():\r\n             if line:\r\n                 # 解码并处理每一行数据\r\n"
+                },
+                {
+                    "date": 1744353725310,
+                    "content": "Index: \n===================================================================\n--- \n+++ \n@@ -42,34 +42,15 @@\n         \"messages\": messages,\r\n         \"stream\": True  # 开启流式输出\r\n     }\r\n     try:\r\n-        # 发送 POST 请求并开启流式响应\r\n-        response = requests.post(ollama_url, json=data, stream=True)\r\n-        # 检查响应状态码\r\n-        response.raise_for_status()\r\n         with requests.post(ollama_url, headers=headers, json=data, stream=True) as res:\r\n             res.raise_for_status()\r\n             for line in res.iter_lines(decode_unicode=True):\r\n                 if line:\r\n                     print(line)\r\n                     yield json.loads(line)\r\n-        # 流式处理响应内容\r\n-        for line in response.iter_lines():\r\n-            if line:\r\n-                # 解码并处理每一行数据\r\n-                line = line.decode('utf-8').lstrip(\"data: \")\r\n-                try:\r\n-                    import json\r\n-                    chunk = json.loads(line)\r\n-                    if 'choices' in chunk and len(chunk['choices']) > 0:\r\n-                        delta = chunk['choices'][0]['delta']\r\n-                        if 'content' in delta:\r\n-                            print(delta['content'], end='', flush=True)\r\n-                except json.JSONDecodeError:\r\n-                    print(f\"无法解析的 JSON 数据: {line}\")\r\n \r\n-        print()  # 换行\r\n     except requests.exceptions.RequestException as e:\r\n         print(f\"请求发生错误: {e}\")\r\n # 定义一个函数，用于通过 Ollama 调用大模型\r\n def ollama_util(ollama_url, model_name, prompt,system_message=\"\"):\r\n"
+                },
+                {
+                    "date": 1744353752825,
+                    "content": "Index: \n===================================================================\n--- \n+++ \n@@ -28,8 +28,9 @@\n                 output.AppendText(res['response'])\r\n             feedback += res['response']\r\n     return feedback\r\n def ollama_chat(ollama_url, model_name, message):\r\n+    headers = {'Content-Type': 'application/json'}\r\n     messages = [\r\n     {\r\n         \"role\": \"user\",\r\n         \"content\": message\r\n"
+                },
+                {
+                    "date": 1744353809119,
+                    "content": "Index: \n===================================================================\n--- \n+++ \n@@ -22,12 +22,12 @@\n     global g_ollama_url\r\n     url = g_ollama_url + \"api/chat\"\r\n     feedback = \"\"\r\n     for res in ollama_chat(url, model, prompt):\r\n-        if \"response\" in res:\r\n+        if \"content\" in res:\r\n             if None !=  output:\r\n-                output.AppendText(res['response'])\r\n-            feedback += res['response']\r\n+                output.AppendText(res['content'])\r\n+            feedback += res['content']\r\n     return feedback\r\n def ollama_chat(ollama_url, model_name, message):\r\n     headers = {'Content-Type': 'application/json'}\r\n     messages = [\r\n"
+                },
+                {
+                    "date": 1744353887490,
+                    "content": "Index: \n===================================================================\n--- \n+++ \n@@ -22,8 +22,9 @@\n     global g_ollama_url\r\n     url = g_ollama_url + \"api/chat\"\r\n     feedback = \"\"\r\n     for res in ollama_chat(url, model, prompt):\r\n+        print(res)\r\n         if \"content\" in res:\r\n             if None !=  output:\r\n                 output.AppendText(res['content'])\r\n             feedback += res['content']\r\n"
+                },
+                {
+                    "date": 1744353895346,
+                    "content": "Index: \n===================================================================\n--- \n+++ \n@@ -48,9 +48,9 @@\n         with requests.post(ollama_url, headers=headers, json=data, stream=True) as res:\r\n             res.raise_for_status()\r\n             for line in res.iter_lines(decode_unicode=True):\r\n                 if line:\r\n-                    print(line)\r\n+                    #print(line)\r\n                     yield json.loads(line)\r\n \r\n     except requests.exceptions.RequestException as e:\r\n         print(f\"请求发生错误: {e}\")\r\n"
+                },
+                {
+                    "date": 1744353965277,
+                    "content": "Index: \n===================================================================\n--- \n+++ \n@@ -23,11 +23,11 @@\n     url = g_ollama_url + \"api/chat\"\r\n     feedback = \"\"\r\n     for res in ollama_chat(url, model, prompt):\r\n         print(res)\r\n-        if \"content\" in res:\r\n+        if \"message\" in res:\r\n             if None !=  output:\r\n-                output.AppendText(res['content'])\r\n+                output.AppendText(res['message'][\"content\"])\r\n             feedback += res['content']\r\n     return feedback\r\n def ollama_chat(ollama_url, model_name, message):\r\n     headers = {'Content-Type': 'application/json'}\r\n"
+                },
+                {
+                    "date": 1744353973676,
+                    "content": "Index: \n===================================================================\n--- \n+++ \n@@ -26,9 +26,9 @@\n         print(res)\r\n         if \"message\" in res:\r\n             if None !=  output:\r\n                 output.AppendText(res['message'][\"content\"])\r\n-            feedback += res['content']\r\n+            feedback += res['message'][\"content\"]\r\n     return feedback\r\n def ollama_chat(ollama_url, model_name, message):\r\n     headers = {'Content-Type': 'application/json'}\r\n     messages = [\r\n"
                 }
             ],
             "date": 1744338557994,

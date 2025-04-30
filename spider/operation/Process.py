@@ -7,6 +7,7 @@ import jieba
 import requests
 
 OLLAMA_API_URL = "http://192.168.3.65:11434/api/generate"
+#OLLAMA_API_URL = "http://10.0.0.10:11434/api/generate"
 MODEL_NAME = "qwen2.5:32b"
 '''
 概要：近日，昆明机场一广告牌上的女性形象被发现有六根手指，经核实为某信息传 
@@ -71,7 +72,7 @@ def generate_summary(news_content):
     # 构建请求体
     payload = {
         "model": MODEL_NAME,
-        "prompt": f"请为以下新闻内容生成一个简单概要：{news_content}",
+        "prompt": f"请为以下内容生成一个简单概要：{news_content}",
         "stream": False
     }
 
@@ -141,7 +142,7 @@ def run(_news_data):
     #print(processed_news)
     unique_news = remove_duplicates(processed_news)
     print("处理后的新闻数据:")
-    #print(unique_news)
+    print(unique_news)
     news_brief = generate_news_brief(unique_news)
     print("处理后的新闻数据:")
     #print(news_brief)

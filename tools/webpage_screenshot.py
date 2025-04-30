@@ -433,13 +433,17 @@ def ollama_identify_image(image_path):
 def screenshot_and_identify():
     if request.content_type != 'application/json':
         return jsonify({"error": "请求头 Content-Type 必须是 application/json"}), 400
-    global result_map
-    result_map = {}
+
     data = request.get_json()
     url = data.get('url')
     if not url:
         return jsonify({"error": "缺少 URL 参数"}), 400
+    return spider_web(url)
     
+def spider_web(url):
+
+    global result_map
+    result_map = {}    
     # 生成唯一的截图文件名
     output_path = f"./{int(time.time())}_screenshot.png"
     capture_screenshot(url, output_path)

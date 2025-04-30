@@ -1,0 +1,54 @@
+{
+    "sourceFile": "server.py",
+    "activeCommit": 0,
+    "commits": [
+        {
+            "activePatchIndex": 9,
+            "patches": [
+                {
+                    "date": 1744614217163,
+                    "content": "Index: \n===================================================================\n--- \n+++ \n"
+                },
+                {
+                    "date": 1744614222636,
+                    "content": "Index: \n===================================================================\n--- \n+++ \n@@ -34,6 +34,7 @@\n     root_folder = data.get('root_folder')\r\n     #root_folder = \"D:\\hr\\AI\\公共资源\\项目汇总(2)\\项目汇总\"\r\n     from files import readPDFFiles as rd\r\n     rd.main(full_config.getMysql(), root_folder)\r\n+\r\n if __name__ == \"__main__\":\r\n     app.run(debug=True, host='0.0.0.0')\r\n"
+                },
+                {
+                    "date": 1744614268306,
+                    "content": "Index: \n===================================================================\n--- \n+++ \n@@ -34,7 +34,16 @@\n     root_folder = data.get('root_folder')\r\n     #root_folder = \"D:\\hr\\AI\\公共资源\\项目汇总(2)\\项目汇总\"\r\n     from files import readPDFFiles as rd\r\n     rd.main(full_config.getMysql(), root_folder)\r\n+@app.route('/screenshot_and_identify', methods=['POST'])\r\n+def screenshot_and_identify():\r\n+        if request.content_type != 'application/json':\r\n+            return jsonify({\"error\": \"请求头 Content-Type 必须是 application/json\"}), 400\r\n \r\n+    data = request.get_json()\r\n+    url = data.get('url')\r\n+    if not url:\r\n+        return jsonify({\"error\": \"缺少 URL 参数\"}), 400\r\n+    ws.screenshot_and_identify()\r\n if __name__ == \"__main__\":\r\n     app.run(debug=True, host='0.0.0.0')\r\n"
+                },
+                {
+                    "date": 1744614278137,
+                    "content": "Index: \n===================================================================\n--- \n+++ \n@@ -36,11 +36,10 @@\n     from files import readPDFFiles as rd\r\n     rd.main(full_config.getMysql(), root_folder)\r\n @app.route('/screenshot_and_identify', methods=['POST'])\r\n def screenshot_and_identify():\r\n-        if request.content_type != 'application/json':\r\n-            return jsonify({\"error\": \"请求头 Content-Type 必须是 application/json\"}), 400\r\n-\r\n+    if request.content_type != 'application/json':\r\n+        return jsonify({\"error\": \"请求头 Content-Type 必须是 application/json\"}), 400\r\n     data = request.get_json()\r\n     url = data.get('url')\r\n     if not url:\r\n         return jsonify({\"error\": \"缺少 URL 参数\"}), 400\r\n"
+                },
+                {
+                    "date": 1744614832746,
+                    "content": "Index: \n===================================================================\n--- \n+++ \n@@ -42,7 +42,7 @@\n     data = request.get_json()\r\n     url = data.get('url')\r\n     if not url:\r\n         return jsonify({\"error\": \"缺少 URL 参数\"}), 400\r\n-    ws.screenshot_and_identify()\r\n+    ws.spider_web(url)\r\n if __name__ == \"__main__\":\r\n     app.run(debug=True, host='0.0.0.0')\r\n"
+                },
+                {
+                    "date": 1744614913977,
+                    "content": "Index: \n===================================================================\n--- \n+++ \n@@ -8,8 +8,9 @@\n from selenium.webdriver.common.action_chains import ActionChains\r\n import base64\r\n from bs4 import BeautifulSoup\r\n import json\r\n+import sys\r\n from tools import webpage_screenshot as ws\r\n \r\n \r\n app = Flask(__name__)\r\n"
+                },
+                {
+                    "date": 1744614935853,
+                    "content": "Index: \n===================================================================\n--- \n+++ \n@@ -10,10 +10,11 @@\n from bs4 import BeautifulSoup\r\n import json\r\n import sys\r\n from tools import webpage_screenshot as ws\r\n+from config.GlobalConfig import ConfigSingleton\r\n+from datetime import date\r\n \r\n-\r\n app = Flask(__name__)\r\n result_map = {}\r\n # 获取当前文件所在目录的路径\r\n current_dir = os.path.dirname(os.path.abspath(__file__))\r\n"
+                },
+                {
+                    "date": 1744614989409,
+                    "content": "Index: \n===================================================================\n--- \n+++ \n@@ -23,12 +23,8 @@\n \r\n #app = create_app()\r\n full_config = ConfigSingleton()\r\n \r\n-\r\n-@app.route('/screenshot_and_identify', methods=['POST'])\r\n-def screenshot_and_identify():\r\n-    pass\r\n @app.route('/check_pdfs', methods=['POST'])\r\n def check_pdfs():\r\n     print(\"start run pdf filter\")\r\n     # 获取请求中的root_folder\r\n"
+                },
+                {
+                    "date": 1744615214273,
+                    "content": "Index: \n===================================================================\n--- \n+++ \n@@ -42,5 +42,5 @@\n     if not url:\r\n         return jsonify({\"error\": \"缺少 URL 参数\"}), 400\r\n     ws.spider_web(url)\r\n if __name__ == \"__main__\":\r\n-    app.run(debug=True, host='0.0.0.0')\r\n+    app.run(debug=True, host='0.0.0.0', port=9304)\r\n"
+                },
+                {
+                    "date": 1744615233851,
+                    "content": "Index: \n===================================================================\n--- \n+++ \n@@ -42,5 +42,5 @@\n     if not url:\r\n         return jsonify({\"error\": \"缺少 URL 参数\"}), 400\r\n     ws.spider_web(url)\r\n if __name__ == \"__main__\":\r\n-    app.run(debug=True, host='0.0.0.0', port=9304)\r\n+    app.run(debug=True, host='0.0.0.0', port=5000)\r\n"
+                }
+            ],
+            "date": 1744614217163,
+            "name": "Commit-0",
+            "content": "from flask import Flask, request, jsonify\r\nfrom selenium import webdriver\r\nfrom selenium.webdriver.chrome.service import Service\r\nfrom selenium.webdriver.common.by import By  # 导入 By 类\r\nimport time\r\nimport requests\r\nimport os\r\nfrom selenium.webdriver.common.action_chains import ActionChains\r\nimport base64\r\nfrom bs4 import BeautifulSoup\r\nimport json\r\nfrom tools import webpage_screenshot as ws\r\n\r\n\r\napp = Flask(__name__)\r\nresult_map = {}\r\n# 获取当前文件所在目录的路径\r\ncurrent_dir = os.path.dirname(os.path.abspath(__file__))\r\n# 将当前目录添加到 sys.path 中\r\nsys.path.append(current_dir)\r\n\r\n#app = create_app()\r\nfull_config = ConfigSingleton()\r\n\r\n\r\n@app.route('/screenshot_and_identify', methods=['POST'])\r\ndef screenshot_and_identify():\r\n    pass\r\n@app.route('/check_pdfs', methods=['POST'])\r\ndef check_pdfs():\r\n    print(\"start run pdf filter\")\r\n    # 获取请求中的root_folder\r\n    data = request.get_json()\r\n    root_folder = data.get('root_folder')\r\n    #root_folder = \"D:\\hr\\AI\\公共资源\\项目汇总(2)\\项目汇总\"\r\n    from files import readPDFFiles as rd\r\n    rd.main(full_config.getMysql(), root_folder)\r\nif __name__ == \"__main__\":\r\n    app.run(debug=True, host='0.0.0.0')\r\n"
+        }
+    ]
+}

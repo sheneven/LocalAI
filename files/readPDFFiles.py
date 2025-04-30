@@ -22,7 +22,7 @@ sys_message="""
     你精通统计分析、数据挖掘、异常检测等技术，能够运用专业的统计软件和工具对数据进行深度分析，并通过逻辑推理和数据验证来得出准确的结论。
     ## 目标
       1. 对投标打分表进行初步的数据清洗和整理，确保数据的准确性和完整性。
-      2. 运用统计方法（如均值、标准差、方差分析、相关性分析等）分析专家打分的分布情况，识别是否存在异常打分。
+      2. 运用统计方法（如均值、标准差、方差分析、相关性分析、四分位距）分析专家打分的分布情况，识别是否存在异常打分。
       3. 通过聚类分析、回归分析等方法，找出专家对某投标人的偏向性，判断是否存在故意抬高或压低排名的现象。
       4. 提供详细的分析报告，包括数据可视化图表和结论，为用户决策提供依据。
     ## 流程
@@ -90,12 +90,12 @@ def extract_tables_from_pdf(pdf_path, output):
             merge_table.append(row)
     print(len(merge_table))
     # 去掉列名中的换行符并转换为拼音
-    (conclusion, df) = parse_one_table(merge_table, start_ex, end_ex, project_name)  # 修改：传递project_name参数
+    (conclusion, df) = parse_one_table(merge_table, start_ex, end_ex, project_name,output)  # 修改：传递project_name参数
     output.AppendText(conclusion)
     dataframes.append(df)
     return dataframes
 #对单个表进行处理
-def parse_one_table(table, start, end, project_name):
+def parse_one_table(table, start, end, project_name,output=None):
     try:
         # 去掉列名中的换行符并转换为拼音
         print("table:", table)
@@ -134,17 +134,21 @@ def parse_one_table(table, start, end, project_name):
         #给出第一个专家和最后一个专家的index
         #conclusion = findout_except_expert(df_score, start, end-2,project_name )
         df_score_json = df_score.to_json(orient='records', force_ascii=False)
-        conclusion = findout_except_expert_by_ai(df_score_json)
+        conclusion = findout_except_expert_by_ai(df_score_json,output)
         print(conclusion)
-        with open("结果.txt","a")  as f:
+        with open(f"{project_name}_结果.txt","w")  as f:
             f.write(conclusion)
+        conclusion = conclusion[conclusion.find("结论"):] if conclusion.find("结论") > 0 else ""  
+        conclusion = f"/n========================================/n{project_name} 结论如下:{conclusion}"
         print(f"df_score exported to {output_path}")
+        with open(f"结果.txt","a")  as f:
+            f.write(conclusion)
         return (conclusion,df_score)
     except Exception as e:
         print("Error1:", e)
         return None
 # 添加AI分析部分，检测评分异常的专家
-def findout_except_expert_by_ai(str_conclusion):
+def findout_except_expert_by_ai(str_conclusion,output=None):
     global PROMPT_TEMPLATE,sys_message
     conclussion = ""
     str_index = ""
@@ -153,7 +157,7 @@ def findout_except_expert_by_ai(str_conclusion):
         data_str = f"现在有专家对投标人打分，已经发现了打分异常，请综合分析，并找出专家偏向的投标企业:{str_conclusion}"
         print("prompt:", PROMPT_TEMPLATE.format(data=data_str))
         query = PROMPT_TEMPLATE.format(data=data_str)
-        conclussion = model_generate(query, "deepseek-r1:32b",sys_message)
+        conclussion = model_generate(query, "deepseek-r1:32b",sys_message,output)
         print("conclussion:", conclussion)
         str_index = conclussion[conclussion.find("</think>")+9:]
     except Exception as e:

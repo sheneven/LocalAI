@@ -16,7 +16,7 @@ USER_AGENTS = [
 
 # 目标url
 url = "https://mp.weixin.qq.com/cgi-bin/appmsg"
-cookie = "RK=dlfU1pDcV3; ptcz=9517a0b290759e72516957e5dd203760d910532ed6afca125d0dea8a3565ba62; o_cookie=1405516353; ua_id=aKMsAWXyRexPYnSfAAAAAGeSLBpuZpwL1qrxsnYcRsE=; mm_lang=zh_CN; _qimei_uuid42=18910121904100935264fc3c36652549cce33bf35b; pac_uid=0_cdmi2NWSefEmp; _qimei_q36=; _qimei_h38=4ba6c57d5264fc3c3665254902000007c18910; wxuin=27151621520234; suid=user_0_cdmi2NWSefEmp; pgv_pvid=8440601090; _qimei_fingerprint=1facd17b55437bdf315b976665efb89b; _clck=3874745028|1|fur|0; uuid=0edd37f29d7b9958afc9cecaef495e05; rand_info=CAESIOgn7QHJFWtKBgjvX4b9vTrlQzsdYLDzeJs/NaXzGMza; slave_bizuin=3874745028; data_bizuin=3874745028; bizuin=3874745028; data_ticket=cxNoBKPN6/QILfbytifr5eDOI4rHPwringdaBcyH3MfAECCz0Pf3AQWtFWgh5d6n; slave_sid=WUFlajMxbUIybFdDZjhCY1ByNWV1SXpFT0Zzd0FiMU1vUFI2OWhIX1BHa2NoMGJ0a2hfOXpOT0xidndjbmxQQWZFVENPWHdlY21Bem5ZTE1UbzB4YVVsTGNZSFhsRjFFYmlzb2VMRm05WnJITWhMX1k1T1c1dGdCc1ZpeEZib3o1TERuZXJScFVOVXdFQ3Nz; slave_user=gh_eb1d91fa6413; xid=871480bf77d4538d6699e930d0607424; _clsk=mtlj0b|1743667462410|5|1|mp.weixin.qq.com/weheat-agent/payload/record; rewardsn=; wxtokenkey=777"
+cookie = "RK=dlfU1pDcV3; ptcz=9517a0b290759e72516957e5dd203760d910532ed6afca125d0dea8a3565ba62; o_cookie=1405516353; ua_id=aKMsAWXyRexPYnSfAAAAAGeSLBpuZpwL1qrxsnYcRsE=; mm_lang=zh_CN; _qimei_uuid42=18910121904100935264fc3c36652549cce33bf35b; pac_uid=0_cdmi2NWSefEmp; _qimei_q36=; _qimei_h38=4ba6c57d5264fc3c3665254902000007c18910; wxuin=27151621520234; suid=user_0_cdmi2NWSefEmp; pgv_pvid=8440601090; _qimei_fingerprint=1facd17b55437bdf315b976665efb89b; _clck=3874745028|1|fv2|0; uuid=d3b706a0d37203dd9da96631cfd3e859; rand_info=CAESIG0usVOBo0YcopWZd6uCujxyV3KdJzhqhlg9aC0Hayiv; slave_bizuin=3874745028; data_bizuin=3874745028; bizuin=3874745028; data_ticket=kMX3O9GkPtfTxVtxB//I7AWTXbZ+9w2JIDG2bS8DtVJldv6kEgzFushOZU4NPBGC; slave_sid=UHRTRHM5MmhVaXpkTjBFS2VxSDl4UmZWU29UdU1QRXo1V0xEZ1JtcEp6ZlEyYmcxYUFmV1oxajc2STFkM3pndDUyWGFWOWhZQThyaFZQZmZ0Y3pic200elUzaXVZRzZfXzVZUUZ2VDRmUU50YmFoOUk2ek9DdlpKeWY1Wk1tdHVwa1pERUVEa3BpRUZwbWFX; slave_user=gh_eb1d91fa6413; xid=b4c86fe03ed8b019e69ea59e695ba5a6; _clsk=1jol8p7|1744624279578|9|1|mp.weixin.qq.com/weheat-agent/payload/record"
 
 headers = {
     "Cookie": cookie,
@@ -34,17 +34,33 @@ data = {
     "fakeid": "MjM5NTQ4MTQyMg==",  # 自己的号，设置为空
     "type": "9",
 }
-
+goal = [
+    {'name':"奔腾融媒",'fakeid':"MjM5NTQ4MTQyMg==",'token':"1671697423",'title':""},
+    {'name':"新华网",'fakeid':"MjM5NzI3NDg4MA==",'token':"1671697423",'title':""}
+]
+'''
+### 奔腾融媒
+fake_id
+MjM5NTQ4MTQyMg==
+token
+1671697423
+### 新华网
+fake_id
+MjM5NzI3NDg4MA==
+token
+1671697423
+'''
 
 def get_total_count():
     headers["User-Agent"] = random.choice(USER_AGENTS)  # 每次请求动态更改 User-Agent
     content_json = requests.get(url, headers=headers, params=data).json()
+    print(content_json)
     count = int(content_json["app_msg_cnt"])
     return count
 
 
 # 每 20 篇文章休息 5 分钟
-def get_content_list(count, per_page=5, pause_after=20, pause_time=10):
+def get_content_list(title,count, per_page=5, pause_after=20, pause_time=10):
     page = int(math.ceil(count / per_page))
     total_fetched = 0
 
@@ -62,12 +78,12 @@ def get_content_list(count, per_page=5, pause_after=20, pause_time=10):
         # 实时将数据保存到 CSV 文件中
         for item in app_msg_list:
             title = item["title"]
-            link = item["link"]
-            create_time = time.strftime("%Y-%m-%d %H:%M", time.localtime(item["create_time"]))
+            link = item["url"]
+            create_time = time.strftime("%Y-%m-%d %H:%M", time.localtime(item["published_time"]))
             if create_time > "2025-04-03":
                 return 
             result = [[title, link, create_time]]
-            df = pd.DataFrame(result, columns=['title', 'link', 'create_time'])
+            df = pd.DataFrame(result, columns=['title', 'url', 'published_time'])
             df.to_csv("data.csv", mode='a', header=False, index=False, encoding='utf-8')  # 追加模式写入
 
         # 延长请求间隔时间，模拟更自然的行为
@@ -81,14 +97,15 @@ def get_content_list(count, per_page=5, pause_after=20, pause_time=10):
             time.sleep(pause_time)  # 暂停 5 分钟（300秒）
             total_fetched = 0  # 重置计数器
 
-def run():
+def run(_goal):
     # 创建 CSV 文件并写入标题行
-    df = pd.DataFrame(columns=['title', 'link', 'create_time'])
+    df = pd.DataFrame(columns=['title', 'content', 'url', 'published_time'])
     df.to_csv("data.csv", mode='w', index=False, encoding='utf-8')
 
     count = get_total_count()
-    get_content_list(count)
+    get_content_list(title,count)
 
 if __name__ == "__main__":
-    run()
+    #global goal
+    run(goal)
 

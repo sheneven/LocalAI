@@ -7,8 +7,9 @@ column_names = ["id","title","content","summary"]
 def getDataFromMysql(mysqlUtil, _date):
     data = mysqlUtil.select_data("news_info", "id,title,content,summary", f"published_time > {_date}")
     #print(data)
-    dict_list = [dict(zip(column_names, row)) for row in data]
-    return dict_list
+    #dict_list = [dict(zip(column_names, row)) for row in data]
+    #return dict_list
+    return data
     
 #数据处理
 def processData(news_data):

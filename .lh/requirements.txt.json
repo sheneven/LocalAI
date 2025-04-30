@@ -1,0 +1,26 @@
+{
+    "sourceFile": "requirements.txt",
+    "activeCommit": 0,
+    "commits": [
+        {
+            "activePatchIndex": 2,
+            "patches": [
+                {
+                    "date": 1744512924024,
+                    "content": "Index: \n===================================================================\n--- \n+++ \n"
+                },
+                {
+                    "date": 1744512950043,
+                    "content": "Index: \n===================================================================\n--- \n+++ \n@@ -24,5 +24,6 @@\n mysql-connector-python==8.0.33\r\n pyyaml==6.0\r\n jieba==0.42.1\r\n beautifulsoup4==4.12.2\r\n-wxPython=4.2.3\n\\ No newline at end of file\n+wxPython==4.2.3\r\n+ pypinyin==0.54.0\n\\ No newline at end of file\n"
+                },
+                {
+                    "date": 1744512993923,
+                    "content": "Index: \n===================================================================\n--- \n+++ \n@@ -25,5 +25,7 @@\n pyyaml==6.0\r\n jieba==0.42.1\r\n beautifulsoup4==4.12.2\r\n wxPython==4.2.3\r\n- pypinyin==0.54.0\n\\ No newline at end of file\n+pypinyin==0.54.0\r\n+numpy==1.26.4\r\n+pandas==2.2.3\r\n"
+                }
+            ],
+            "date": 1744512924024,
+            "name": "Commit-0",
+            "content": "Flask==3.0.2\r\nFlask-SQLAlchemy==3.1.1\r\nFlask-Login==0.6.3\r\nFlask-Migrate==4.0.5\r\nFlask-WTF==1.2.1\r\nDrissionPage==4.0.1\r\npandas==2.2.1\r\npyautogui==0.9.54\r\nkeyboard==0.13.5\r\npywinauto==0.6.9\r\npython-dotenv==1.0.1\r\nWerkzeug==3.0.1\r\nSQLAlchemy==2.0.28\r\nrequests==2.31.0\r\nPillow==11.1.0\r\npywin32==308\r\nselenium==4.12.0\r\npytest==7.4.2\r\nasgiref==3.7.2\r\nasyncio==3.4.3 \r\nscrapy==2.8.0\r\nlog==0.4.1\r\npytest-asyncio==0.21.0\r\nmysql-connector-python==8.0.33\r\npyyaml==6.0\r\njieba==0.42.1\r\nbeautifulsoup4==4.12.2\r\nwxPython=4.2.3"
+        }
+    ]
+}

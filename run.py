@@ -26,8 +26,10 @@ def run_pdf_filter():
     rd.main(full_config.getMysql(), root_path)
     pass
 def run_spider(_today):
+    #select id,name,code,last,update_date from web_list where del_flag = '0'
+    web_config = full_config.getMysql().select_data("web_list",columns="id,name,code,url,last,update_date",condition="del_flag = '0'")
     from spider import test
-    test.run_politics_news_spider(_today)
+    test.run_politics_news_spider(full_config,web_config,_today)
     from tools.NewsTools import run
     run(_today,full_config)
 
@@ -38,8 +40,8 @@ if __name__ == '__main__':
     
         today = date.today()
         print(today)
-        #run_spider(str(today))
-        run_pdf_filter()
+        run_spider(str(today))
+        #run_pdf_filter()
     except Exception as e:
         print(e)
         pass

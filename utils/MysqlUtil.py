@@ -1,6 +1,7 @@
 import mysql.connector
 from mysql.connector import Error
 import pandas as pd
+import datetime
 
 class MySQLUtil:
     def __init__(self, host, database, user, password):
@@ -16,6 +17,8 @@ class MySQLUtil:
         self.user = user
         self.password = password
         self.connection = None
+        self.select_by_id = ""
+        self.update_by_id = ""
         
 
 
@@ -109,8 +112,26 @@ class MySQLUtil:
                 select_query += f" WHERE {condition}"
             print("数据查询："+select_query)
             cursor.execute(select_query)
-            records = cursor.fetchall()
-            return records
+            result = cursor.fetchall()
+            columns = [i[0] for i in cursor.description]
+            # 处理时间类型
+            def fix_lob(row):
+                def convert(col):
+                    if isinstance(col, (datetime.date, datetime.time)):
+                        return str(col)
+                    elif isinstance(col, str) and (col.startswith('{') or col.startswith('[')):
+                        try:
+                            return json.loads(col)
+                        except:
+                            return col
+                    else:
+                        return col
+
+                return [convert(c) for c in row]
+
+            result = [fix_lob(row) for row in result]
+            result = [dict(zip(columns, r)) for r in result]
+            return result
         except Error as e:
             print(f"查询数据时发生错误: {e}")
         return []
@@ -128,6 +149,7 @@ class MySQLUtil:
         try:
             cursor = self.connection.cursor()
             update_query = f"UPDATE {table_name} SET {set_values} WHERE {condition}"
+            print(f"{update_query}")
             cursor.execute(update_query)
             self.connection.commit()
             print("数据更新成功")
@@ -136,6 +158,25 @@ class MySQLUtil:
             print(f"更新数据时发生错误: {e}")
         return False
 
+    def excute_sql(self, sql):
+        """
+        更新指定表中的数据
+        :param table_name: 表名
+        :param set_values: 要更新的列和值，例如 "name = 'Jane', age = 26"
+        :param condition: 更新条件，例如 "id = 1"
+        :return: 操作是否成功
+        """
+        if not self.connection:
+            self.connect()
+        try:
+            cursor = self.connection.cursor()
+            cursor.execute(sql)
+            self.connection.commit()
+            print(f"{sql}执行成功")
+            return True
+        except Error as e:
+            print(f"更新数据时发生错误: {e}")
+        return False
     def delete_data(self, table_name, condition):
         """
         从指定表中删除数据

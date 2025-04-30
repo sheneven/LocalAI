@@ -1,0 +1,54 @@
+{
+    "sourceFile": "chat_interface.py",
+    "activeCommit": 0,
+    "commits": [
+        {
+            "activePatchIndex": 9,
+            "patches": [
+                {
+                    "date": 1744351700375,
+                    "content": "Index: \n===================================================================\n--- \n+++ \n"
+                },
+                {
+                    "date": 1744352262975,
+                    "content": "Index: \n===================================================================\n--- \n+++ \n@@ -29,9 +29,9 @@\n         user_message = self.user_input.GetValue()\n         if user_message:\n             self.chat_history.AppendText(f'You: {user_message}\\n')\n             self.user_input.Clear()\n-            response = model_chat(user_message)\n+            response = model_chat(user_message,chat_history)\n             self.chat_history.AppendText(f'Bot: {response}\\n')\n \n def main():\n     app = wx.App()\n"
+                },
+                {
+                    "date": 1744352270825,
+                    "content": "Index: \n===================================================================\n--- \n+++ \n@@ -29,10 +29,10 @@\n         user_message = self.user_input.GetValue()\n         if user_message:\n             self.chat_history.AppendText(f'You: {user_message}\\n')\n             self.user_input.Clear()\n-            response = model_chat(user_message,chat_history)\n-            self.chat_history.AppendText(f'Bot: {response}\\n')\n+            response = model_chat(user_message,self.chat_history)\n+            #self.chat_history.AppendText(f'Bot: {response}\\n')\n \n def main():\n     app = wx.App()\n     ex = ChatFrame(None)\n"
+                },
+                {
+                    "date": 1744352471768,
+                    "content": "Index: \n===================================================================\n--- \n+++ \n@@ -29,9 +29,9 @@\n         user_message = self.user_input.GetValue()\n         if user_message:\n             self.chat_history.AppendText(f'You: {user_message}\\n')\n             self.user_input.Clear()\n-            response = model_chat(user_message,self.chat_history)\n+            response = model_chat(user_message,\"deepseek-r1:32b\",self.chat_history)\n             #self.chat_history.AppendText(f'Bot: {response}\\n')\n \n def main():\n     app = wx.App()\n"
+                },
+                {
+                    "date": 1744352550848,
+                    "content": "Index: \n===================================================================\n--- \n+++ \n@@ -29,9 +29,11 @@\n         user_message = self.user_input.GetValue()\n         if user_message:\n             self.chat_history.AppendText(f'You: {user_message}\\n')\n             self.user_input.Clear()\n-            response = model_chat(user_message,\"deepseek-r1:32b\",self.chat_history)\n+                    conclussion = model_generate(query, \"deepseek-r1:32b\",sys_message,output)\n+\n+            response = model_generate(user_message,\"deepseek-r1:32b\",self.chat_history)\n             #self.chat_history.AppendText(f'Bot: {response}\\n')\n \n def main():\n     app = wx.App()\n"
+                },
+                {
+                    "date": 1744352565123,
+                    "content": "Index: \n===================================================================\n--- \n+++ \n@@ -29,11 +29,9 @@\n         user_message = self.user_input.GetValue()\n         if user_message:\n             self.chat_history.AppendText(f'You: {user_message}\\n')\n             self.user_input.Clear()\n-                    conclussion = model_generate(query, \"deepseek-r1:32b\",sys_message,output)\n-\n-            response = model_generate(user_message,\"deepseek-r1:32b\",self.chat_history)\n+            response = model_generate(user_message,\"deepseek-r1:32b\",\"\",self.chat_history)\n             #self.chat_history.AppendText(f'Bot: {response}\\n')\n \n def main():\n     app = wx.App()\n"
+                },
+                {
+                    "date": 1744352579569,
+                    "content": "Index: \n===================================================================\n--- \n+++ \n@@ -29,10 +29,10 @@\n         user_message = self.user_input.GetValue()\n         if user_message:\n             self.chat_history.AppendText(f'You: {user_message}\\n')\n             self.user_input.Clear()\n-            response = model_generate(user_message,\"deepseek-r1:32b\",\"\",self.chat_history)\n-            #self.chat_history.AppendText(f'Bot: {response}\\n')\n+            #model_generate(user_message,\"deepseek-r1:32b\",\"\",self.chat_history)\n+            self.chat_history.AppendText(f'Bot: {response}\\n')\n \n def main():\n     app = wx.App()\n     ex = ChatFrame(None)\n"
+                },
+                {
+                    "date": 1744352592584,
+                    "content": "Index: \n===================================================================\n--- \n+++ \n@@ -29,10 +29,10 @@\n         user_message = self.user_input.GetValue()\n         if user_message:\n             self.chat_history.AppendText(f'You: {user_message}\\n')\n             self.user_input.Clear()\n-            #model_generate(user_message,\"deepseek-r1:32b\",\"\",self.chat_history)\n-            self.chat_history.AppendText(f'Bot: {response}\\n')\n+            response = model_chat(user_message,\"deepseek-r1:32b\",self.chat_history)\n+            #self.chat_history.AppendText(f'Bot: {response}\\n')\n \n def main():\n     app = wx.App()\n     ex = ChatFrame(None)\n"
+                },
+                {
+                    "date": 1744354053257,
+                    "content": "Index: \n===================================================================\n--- \n+++ \n@@ -27,10 +27,11 @@\n \n     def OnSend(self, e):\n         user_message = self.user_input.GetValue()\n         if user_message:\n-            self.chat_history.AppendText(f'You: {user_message}\\n')\n+            self.chat_history.AppendText(f'You\\n{user_message}\\n')\n             self.user_input.Clear()\n+            self.chat_history.AppendText(f'bot\\n{user_message}\\n')\n             response = model_chat(user_message,\"deepseek-r1:32b\",self.chat_history)\n             #self.chat_history.AppendText(f'Bot: {response}\\n')\n \n def main():\n"
+                },
+                {
+                    "date": 1744354063355,
+                    "content": "Index: \n===================================================================\n--- \n+++ \n@@ -27,11 +27,11 @@\n \n     def OnSend(self, e):\n         user_message = self.user_input.GetValue()\n         if user_message:\n-            self.chat_history.AppendText(f'You\\n{user_message}\\n')\n+            self.chat_history.AppendText(f'客官\\n{user_message}\\n')\n             self.user_input.Clear()\n-            self.chat_history.AppendText(f'bot\\n{user_message}\\n')\n+            self.chat_history.AppendText(f'海瑞\\n{user_message}\\n')\n             response = model_chat(user_message,\"deepseek-r1:32b\",self.chat_history)\n             #self.chat_history.AppendText(f'Bot: {response}\\n')\n \n def main():\n"
+                }
+            ],
+            "date": 1744351700375,
+            "name": "Commit-0",
+            "content": "import wx\nfrom utils.AIUtils import model_chat\n\nclass ChatFrame(wx.Frame):\n    def __init__(self, *args, **kw):\n        super(ChatFrame, self).__init__(*args, **kw)\n\n        self.InitUI()\n\n    def InitUI(self):\n        pnl = wx.Panel(self)\n\n        vbox = wx.BoxSizer(wx.VERTICAL)\n\n        self.chat_history = wx.TextCtrl(pnl, style=wx.TE_MULTILINE | wx.TE_READONLY)\n        self.user_input = wx.TextCtrl(pnl, style=wx.TE_PROCESS_ENTER)\n        self.user_input.Bind(wx.EVT_TEXT_ENTER, self.OnSend)\n\n        vbox.Add(self.chat_history, proportion=1, flag=wx.EXPAND | wx.ALL, border=5)\n        vbox.Add(self.user_input, proportion=0, flag=wx.EXPAND | wx.ALL, border=5)\n\n        pnl.SetSizer(vbox)\n\n        self.SetTitle('Chat Interface')\n        self.Centre()\n        self.Show(True)\n\n    def OnSend(self, e):\n        user_message = self.user_input.GetValue()\n        if user_message:\n            self.chat_history.AppendText(f'You: {user_message}\\n')\n            self.user_input.Clear()\n            response = model_chat(user_message)\n            self.chat_history.AppendText(f'Bot: {response}\\n')\n\ndef main():\n    app = wx.App()\n    ex = ChatFrame(None)\n    app.MainLoop()\n\nif __name__ == '__main__':\n    main()"
+        }
+    ]
+}

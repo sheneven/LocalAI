@@ -3,11 +3,87 @@
     "activeCommit": 0,
     "commits": [
         {
-            "activePatchIndex": 0,
+            "activePatchIndex": 19,
             "patches": [
                 {
                     "date": 1744338524361,
                     "content": "Index: \n===================================================================\n--- \n+++ \n"
+                },
+                {
+                    "date": 1744340154584,
+                    "content": "Index: \n===================================================================\n--- \n+++ \n@@ -89,9 +89,9 @@\n         for row in table:\n             merge_table.append(row)\n     print(len(merge_table))\n     # 去掉列名中的换行符并转换为拼音\n-    (conclusion, df) = parse_one_table(merge_table, start_ex, end_ex, project_name)  # 修改：传递project_name参数\n+    (conclusion, df) = parse_one_table(merge_table, start_ex, end_ex, project_name,output)  # 修改：传递project_name参数\n     output.AppendText(conclusion)\n     dataframes.append(df)\n     return dataframes\n #对单个表进行处理\n@@ -158,8 +158,9 @@\n         str_index = conclussion[conclussion.find(\"</think>\")+9:]\n     except Exception as e:\n         stack_trace = traceback.format_exc()\n         print(\"stack_trace:\", stack_trace)\n+        #print(\"Error2:\", e)\n     finally:\n         print(\"findout_except_expert_by_ai\")\n         return str_index\n \n"
+                },
+                {
+                    "date": 1744340166706,
+                    "content": "Index: \n===================================================================\n--- \n+++ \n@@ -94,9 +94,9 @@\n     output.AppendText(conclusion)\n     dataframes.append(df)\n     return dataframes\n #对单个表进行处理\n-def parse_one_table(table, start, end, project_name):\n+def parse_one_table(table, start, end, project_name,output=None):\n     try:\n         # 去掉列名中的换行符并转换为拼音\n         print(\"table:\", table)\n         output_path = f\"{project_name}_table.csv\"\n"
+                },
+                {
+                    "date": 1744340189017,
+                    "content": "Index: \n===================================================================\n--- \n+++ \n@@ -133,9 +133,9 @@\n         #findout_except_expert_by_ai(df_score)\n         #给出第一个专家和最后一个专家的index\n         #conclusion = findout_except_expert(df_score, start, end-2,project_name )\n         df_score_json = df_score.to_json(orient='records', force_ascii=False)\n-        conclusion = findout_except_expert_by_ai(df_score_json)\n+        conclusion = findout_except_expert_by_ai(df_score_json,output)\n         print(conclusion)\n         with open(\"结果.txt\",\"a\")  as f:\n             f.write(conclusion)\n         print(f\"df_score exported to {output_path}\")\n"
+                },
+                {
+                    "date": 1744340203937,
+                    "content": "Index: \n===================================================================\n--- \n+++ \n@@ -143,9 +143,9 @@\n     except Exception as e:\n         print(\"Error1:\", e)\n         return None\n # 添加AI分析部分，检测评分异常的专家\n-def findout_except_expert_by_ai(str_conclusion):\n+def findout_except_expert_by_ai(str_conclusion,output):\n     global PROMPT_TEMPLATE,sys_message\n     conclussion = \"\"\n     str_index = \"\"\n     try:\n"
+                },
+                {
+                    "date": 1744340300027,
+                    "content": "Index: \n===================================================================\n--- \n+++ \n@@ -143,9 +143,9 @@\n     except Exception as e:\n         print(\"Error1:\", e)\n         return None\n # 添加AI分析部分，检测评分异常的专家\n-def findout_except_expert_by_ai(str_conclusion,output):\n+def findout_except_expert_by_ai(str_conclusion,output=None):\n     global PROMPT_TEMPLATE,sys_message\n     conclussion = \"\"\n     str_index = \"\"\n     try:\n"
+                },
+                {
+                    "date": 1744340318046,
+                    "content": "Index: \n===================================================================\n--- \n+++ \n@@ -152,9 +152,9 @@\n         #data_str = df_score.to_string(index=False)\n         data_str = f\"现在有专家对投标人打分，已经发现了打分异常，请综合分析，并找出专家偏向的投标企业:{str_conclusion}\"\n         print(\"prompt:\", PROMPT_TEMPLATE.format(data=data_str))\n         query = PROMPT_TEMPLATE.format(data=data_str)\n-        conclussion = model_generate(query, \"deepseek-r1:32b\",sys_message)\n+        conclussion = model_generate(query, \"deepseek-r1:32b\",sys_message,output)\n         print(\"conclussion:\", conclussion)\n         str_index = conclussion[conclussion.find(\"</think>\")+9:]\n     except Exception as e:\n         stack_trace = traceback.format_exc()\n"
+                },
+                {
+                    "date": 1744618843856,
+                    "content": "Index: \n===================================================================\n--- \n+++ \n@@ -21,9 +21,9 @@\n     ## 技能：\n     你精通统计分析、数据挖掘、异常检测等技术，能够运用专业的统计软件和工具对数据进行深度分析，并通过逻辑推理和数据验证来得出准确的结论。\n     ## 目标\n       1. 对投标打分表进行初步的数据清洗和整理，确保数据的准确性和完整性。\n-      2. 运用统计方法（如均值、标准差、方差分析、相关性分析等）分析专家打分的分布情况，识别是否存在异常打分。\n+      2. 运用统计方法（如均值、标准差、方差分析、相关性分析、四分位距）分析专家打分的分布情况，识别是否存在异常打分。\n       3. 通过聚类分析、回归分析等方法，找出专家对某投标人的偏向性，判断是否存在故意抬高或压低排名的现象。\n       4. 提供详细的分析报告，包括数据可视化图表和结论，为用户决策提供依据。\n     ## 流程\n         1. 数据预处理：每一个投标人有一系列专家打分。此外还有投标人名称列，编号列，均分列，总分列。\n@@ -135,9 +135,9 @@\n         #conclusion = findout_except_expert(df_score, start, end-2,project_name )\n         df_score_json = df_score.to_json(orient='records', force_ascii=False)\n         conclusion = findout_except_expert_by_ai(df_score_json,output)\n         print(conclusion)\n-        with open(\"结果.txt\",\"a\")  as f:\n+        with open(f\"{project_name}_结果.txt\",\"a\")  as f:\n             f.write(conclusion)\n         print(f\"df_score exported to {output_path}\")\n         return (conclusion,df_score)\n     except Exception as e:\n"
+                },
+                {
+                    "date": 1744618926670,
+                    "content": "Index: \n===================================================================\n--- \n+++ \n@@ -137,8 +137,9 @@\n         conclusion = findout_except_expert_by_ai(df_score_json,output)\n         print(conclusion)\n         with open(f\"{project_name}_结果.txt\",\"a\")  as f:\n             f.write(conclusion)\n+        conclusion = conclusion[conclussion.find(\"结论\")+9:]\n         print(f\"df_score exported to {output_path}\")\n         return (conclusion,df_score)\n     except Exception as e:\n         print(\"Error1:\", e)\n"
+                },
+                {
+                    "date": 1744618957194,
+                    "content": "Index: \n===================================================================\n--- \n+++ \n@@ -137,9 +137,9 @@\n         conclusion = findout_except_expert_by_ai(df_score_json,output)\n         print(conclusion)\n         with open(f\"{project_name}_结果.txt\",\"a\")  as f:\n             f.write(conclusion)\n-        conclusion = conclusion[conclussion.find(\"结论\")+9:]\n+        conclusion = if conclussion.find(\"结论\") > 0 :conclusion[conclussion.find(\"结论\")+9:] else \"\"\n         print(f\"df_score exported to {output_path}\")\n         return (conclusion,df_score)\n     except Exception as e:\n         print(\"Error1:\", e)\n"
+                },
+                {
+                    "date": 1744618965648,
+                    "content": "Index: \n===================================================================\n--- \n+++ \n@@ -137,9 +137,9 @@\n         conclusion = findout_except_expert_by_ai(df_score_json,output)\n         print(conclusion)\n         with open(f\"{project_name}_结果.txt\",\"a\")  as f:\n             f.write(conclusion)\n-        conclusion = if conclussion.find(\"结论\") > 0 :conclusion[conclussion.find(\"结论\")+9:] else \"\"\n+        conclusion = if conclussion.find(\"结论\") > 0 :conclusion[conclussion.find(\"结论\"):] else \"\"\n         print(f\"df_score exported to {output_path}\")\n         return (conclusion,df_score)\n     except Exception as e:\n         print(\"Error1:\", e)\n"
+                },
+                {
+                    "date": 1744619090009,
+                    "content": "Index: \n===================================================================\n--- \n+++ \n@@ -138,8 +138,9 @@\n         print(conclusion)\n         with open(f\"{project_name}_结果.txt\",\"a\")  as f:\n             f.write(conclusion)\n         conclusion = if conclussion.find(\"结论\") > 0 :conclusion[conclussion.find(\"结论\"):] else \"\"\n+        conclusion = f\"{project_name} 结论如下:{conclussion}\"\n         print(f\"df_score exported to {output_path}\")\n         return (conclusion,df_score)\n     except Exception as e:\n         print(\"Error1:\", e)\n"
+                },
+                {
+                    "date": 1744619129754,
+                    "content": "Index: \n===================================================================\n--- \n+++ \n@@ -137,10 +137,9 @@\n         conclusion = findout_except_expert_by_ai(df_score_json,output)\n         print(conclusion)\n         with open(f\"{project_name}_结果.txt\",\"a\")  as f:\n             f.write(conclusion)\n-        conclusion = if conclussion.find(\"结论\") > 0 :conclusion[conclussion.find(\"结论\"):] else \"\"\n-        conclusion = f\"{project_name} 结论如下:{conclussion}\"\n+        conclusion = conclusion[conclusion.find(\"结论\"):] if conclusion.find(\"结论\") > 0 else \"\"        conclusion = f\"{project_name} 结论如下:{conclussion}\"\n         print(f\"df_score exported to {output_path}\")\n         return (conclusion,df_score)\n     except Exception as e:\n         print(\"Error1:\", e)\n"
+                },
+                {
+                    "date": 1744619177634,
+                    "content": "Index: \n===================================================================\n--- \n+++ \n@@ -137,9 +137,10 @@\n         conclusion = findout_except_expert_by_ai(df_score_json,output)\n         print(conclusion)\n         with open(f\"{project_name}_结果.txt\",\"a\")  as f:\n             f.write(conclusion)\n-        conclusion = conclusion[conclusion.find(\"结论\"):] if conclusion.find(\"结论\") > 0 else \"\"        conclusion = f\"{project_name} 结论如下:{conclussion}\"\n+        conclusion = conclusion[conclusion.find(\"结论\"):] if conclusion.find(\"结论\") > 0 else \"\"  \n+        conclusion = f\"{project_name} 结论如下:{conclussion}\"\n         print(f\"df_score exported to {output_path}\")\n         return (conclusion,df_score)\n     except Exception as e:\n         print(\"Error1:\", e)\n"
+                },
+                {
+                    "date": 1744619199488,
+                    "content": "Index: \n===================================================================\n--- \n+++ \n@@ -140,8 +140,10 @@\n             f.write(conclusion)\n         conclusion = conclusion[conclusion.find(\"结论\"):] if conclusion.find(\"结论\") > 0 else \"\"  \n         conclusion = f\"{project_name} 结论如下:{conclussion}\"\n         print(f\"df_score exported to {output_path}\")\n+        with open(f\"{project_name}_结果.txt\",\"a\")  as f:\n+            f.write(conclusion)\n         return (conclusion,df_score)\n     except Exception as e:\n         print(\"Error1:\", e)\n         return None\n"
+                },
+                {
+                    "date": 1744619204875,
+                    "content": "Index: \n===================================================================\n--- \n+++ \n@@ -140,9 +140,9 @@\n             f.write(conclusion)\n         conclusion = conclusion[conclusion.find(\"结论\"):] if conclusion.find(\"结论\") > 0 else \"\"  \n         conclusion = f\"{project_name} 结论如下:{conclussion}\"\n         print(f\"df_score exported to {output_path}\")\n-        with open(f\"{project_name}_结果.txt\",\"a\")  as f:\n+        with open(f\"结果.txt\",\"a\")  as f:\n             f.write(conclusion)\n         return (conclusion,df_score)\n     except Exception as e:\n         print(\"Error1:\", e)\n"
+                },
+                {
+                    "date": 1744619210151,
+                    "content": "Index: \n===================================================================\n--- \n+++ \n@@ -135,9 +135,9 @@\n         #conclusion = findout_except_expert(df_score, start, end-2,project_name )\n         df_score_json = df_score.to_json(orient='records', force_ascii=False)\n         conclusion = findout_except_expert_by_ai(df_score_json,output)\n         print(conclusion)\n-        with open(f\"{project_name}_结果.txt\",\"a\")  as f:\n+        with open(f\"{project_name}_结果.txt\",\"w\")  as f:\n             f.write(conclusion)\n         conclusion = conclusion[conclusion.find(\"结论\"):] if conclusion.find(\"结论\") > 0 else \"\"  \n         conclusion = f\"{project_name} 结论如下:{conclussion}\"\n         print(f\"df_score exported to {output_path}\")\n"
+                },
+                {
+                    "date": 1744621019097,
+                    "content": "Index: \n===================================================================\n--- \n+++ \n@@ -138,9 +138,9 @@\n         print(conclusion)\n         with open(f\"{project_name}_结果.txt\",\"w\")  as f:\n             f.write(conclusion)\n         conclusion = conclusion[conclusion.find(\"结论\"):] if conclusion.find(\"结论\") > 0 else \"\"  \n-        conclusion = f\"{project_name} 结论如下:{conclussion}\"\n+        conclusion = f\"{project_name} 结论如下:{conclusion}\"\n         print(f\"df_score exported to {output_path}\")\n         with open(f\"结果.txt\",\"a\")  as f:\n             f.write(conclusion)\n         return (conclusion,df_score)\n"
+                },
+                {
+                    "date": 1744683840775,
+                    "content": "Index: \n===================================================================\n--- \n+++ \n@@ -138,9 +138,9 @@\n         print(conclusion)\n         with open(f\"{project_name}_结果.txt\",\"w\")  as f:\n             f.write(conclusion)\n         conclusion = conclusion[conclusion.find(\"结论\"):] if conclusion.find(\"结论\") > 0 else \"\"  \n-        conclusion = f\"{project_name} 结论如下:{conclusion}\"\n+        conclusion = f\"/n{project_name} 结论如下:{conclusion}\"\n         print(f\"df_score exported to {output_path}\")\n         with open(f\"结果.txt\",\"a\")  as f:\n             f.write(conclusion)\n         return (conclusion,df_score)\n"
+                },
+                {
+                    "date": 1744709319643,
+                    "content": "Index: \n===================================================================\n--- \n+++ \n@@ -138,9 +138,9 @@\n         print(conclusion)\n         with open(f\"{project_name}_结果.txt\",\"w\")  as f:\n             f.write(conclusion)\n         conclusion = conclusion[conclusion.find(\"结论\"):] if conclusion.find(\"结论\") > 0 else \"\"  \n-        conclusion = f\"/n{project_name} 结论如下:{conclusion}\"\n+        conclusion = f\"/n========================================/n{project_name} 结论如下:{conclusion}\"\n         print(f\"df_score exported to {output_path}\")\n         with open(f\"结果.txt\",\"a\")  as f:\n             f.write(conclusion)\n         return (conclusion,df_score)\n"
                 }
             ],
             "date": 1744338524361,

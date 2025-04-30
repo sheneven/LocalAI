@@ -1,0 +1,26 @@
+{
+    "sourceFile": "pdf_gui.py",
+    "activeCommit": 0,
+    "commits": [
+        {
+            "activePatchIndex": 2,
+            "patches": [
+                {
+                    "date": 1744351666269,
+                    "content": "Index: \n===================================================================\n--- \n+++ \n"
+                },
+                {
+                    "date": 1744354400588,
+                    "content": "Index: \n===================================================================\n--- \n+++ \n@@ -3,8 +3,9 @@\n import threading\n from files.readPDFFiles import main  # Import the main function\n import os  # Added for file operations\n from datetime import date\n+import sys\n \n # 获取当前文件所在目录的路径\n current_dir = os.path.dirname(os.path.abspath(__file__))\n # 将当前目录添加到 sys.path 中\n"
+                },
+                {
+                    "date": 1744354422327,
+                    "content": "Index: \n===================================================================\n--- \n+++ \n@@ -11,9 +11,8 @@\n # 将当前目录添加到 sys.path 中\n sys.path.append(current_dir)\n \n #app = create_app()\n-full_config = ConfigSingleton()\n # Function to open the conclusion file\n def open_conclusion_file(text_output):\n     try:\n         #以系统默认的方式打开结果.txt\n"
+                }
+            ],
+            "date": 1744351666269,
+            "name": "Commit-0",
+            "content": "import wx\nfrom wx.lib.scrolledpanel import ScrolledPanel\nimport threading\nfrom files.readPDFFiles import main  # Import the main function\nimport os  # Added for file operations\nfrom datetime import date\n\n# 获取当前文件所在目录的路径\ncurrent_dir = os.path.dirname(os.path.abspath(__file__))\n# 将当前目录添加到 sys.path 中\nsys.path.append(current_dir)\n\n#app = create_app()\nfull_config = ConfigSingleton()\n# Function to open the conclusion file\ndef open_conclusion_file(text_output):\n    try:\n        #以系统默认的方式打开结果.txt\n        os.startfile(\"结果.txt\")\n        '''\n        with open(\"结果.txt\", \"r\", encoding='utf-8') as file:\n            content = file.read()\n            text_output.Clear()\n            text_output.AppendText(content)\n        '''\n    except FileNotFoundError:\n        wx.MessageBox(\"结果.txt 文件未找到.\", \"错误\", wx.OK | wx.ICON_ERROR)\n    except Exception as e:\n        wx.MessageBox(f\"读取文件时发生错误: {e}\", \"错误\", wx.OK | wx.ICON_ERROR)\n\ndef start_processing(folder_path, text_output):\n    if not folder_path:\n        wx.MessageBox(\"请先选择一个文件夹.\", \"错误\", wx.OK | wx.ICON_ERROR)\n        return\n    \n    # Start processing in a separate thread to avoid freezing the GUI\n    threading.Thread(target=process_data, args=(folder_path, text_output), daemon=True).start()\n\ndef process_data(folder_path, text_output):\n    try:\n        print(\"beging to process data\")\n        # Call the main function with mysqlUtil=None and selected folder path\n        main(mysqlUtil=None, g_root_path=folder_path, output_text=text_output)\n    except Exception as e:\n        text_output.AppendText(f\"转换过程中发生错误: {e}\\n\")\n\nclass MyApp(wx.App):\n    def OnInit(self):\n        frame = wx.Frame(None, title=\"公共资源交易中心-综合评审表校验\", size=(600, 450))\n        panel = ScrolledPanel(frame, -1)\n        panel.SetupScrolling()\n\n        # Folder selection\n        wx.StaticText(panel, label=\"根目录:\", pos=(10, 15))\n        self.folder_var = wx.TextCtrl(panel, pos=(80, 10), size=(300, -1))\n        wx.Button(panel, label=\"选择\", pos=(400, 10)).Bind(wx.EVT_BUTTON, self.on_select_folder)\n\n        # Start processing button\n        wx.Button(panel, label=\"开始校验\", pos=(10, 50)).Bind(wx.EVT_BUTTON, self.on_start_processing)\n\n        # Output text box\n        self.text_output = wx.TextCtrl(panel, pos=(10, 90), size=(560, 250), style=wx.TE_MULTILINE | wx.TE_READONLY)\n\n        # Add a clear button to clear the output text box\n        wx.Button(panel, label=\"清理\", pos=(10, 350)).Bind(wx.EVT_BUTTON, self.on_clear_output)\n\n        # Add an open conclusion button to open the result.txt file\n        wx.Button(panel, label=\"打开结论\", pos=(100, 350)).Bind(wx.EVT_BUTTON, self.on_open_conclusion)\n\n        frame.Show()\n        return True\n\n    def on_select_folder(self, event):\n        dialog = wx.DirDialog(None, \"选择文件夹\", style=wx.DD_DEFAULT_STYLE | wx.DD_DIR_MUST_EXIST)\n        if dialog.ShowModal() == wx.ID_OK:\n            self.folder_var.SetValue(dialog.GetPath())\n        dialog.Destroy()\n\n    def on_start_processing(self, event):\n        folder_path = self.folder_var.GetValue()\n        start_processing(folder_path, self.text_output)\n\n    def on_clear_output(self, event):\n        self.text_output.Clear()\n\n    def on_open_conclusion(self, event):\n        open_conclusion_file(self.text_output)\n\nif __name__ == \"__main__\":\n    app = MyApp(False)\n    app.MainLoop()"
+        }
+    ]
+}
